@@ -1,4 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
+import jwt from 'jsonwebtoken'
 
 export function authHandler(request: FastifyRequest, reply: FastifyReply, done: any) {
     try {
@@ -6,19 +7,21 @@ export function authHandler(request: FastifyRequest, reply: FastifyReply, done: 
             const { authorization } = request.headers
 
             if (!authorization) {
-                return reply.status(401).send({ error: 'Token não informado' })
+                return reply.status(401).send({ statusCode: 401, message: 'Token não informado' })
             }
     
             const [, token] = authorization.split(' ')
     
-            if (token !== '123') {
-                return reply.status(401).send({ error: 'Token inválido' })
-            }   
+            const decoded = jwt.verify(token, process.env.JWT_SECRET as string)
+
+            if (!decoded) {
+                return reply.status(401).send({ statusCode: 401, message: 'Token inválido' })
+            }
         }
     } catch (error) {
         console.error('Erro ao executar o Hook (authHandler)', error)
 
-        reply.status(500).send({ error: 'Erro interno no servidor' })
+        reply.status(500).send({ statusCode: 500, message: 'Erro interno no servidor' })
     }
 
     done()

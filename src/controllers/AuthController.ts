@@ -27,4 +27,17 @@ export class AuthController {
 
         return user
     }
+
+    public async signIn(requestBody: unknown) {
+        const signInSchema = z.object({
+            email: z.string().email(),
+            password: z.string(),
+        }).safeParse(requestBody)
+
+        const { email, password } = signInSchema.data
+        const authUseCase = new AuthUseCase(this.authRepository)
+        const user = await authUseCase.authenticate(email, password)
+
+        return user
+    }
 }

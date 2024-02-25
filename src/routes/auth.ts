@@ -10,3 +10,12 @@ export async function signUp(app: FastifyInstance) {
         return reply.status(201).send(user) 
     })
 }
+
+export async function signIn(app: FastifyInstance) {
+    app.post('/signin', async (request, reply) => {
+        const controller = new AuthController()
+        const user = await controller.signIn(request.body)
+
+        return reply.status(200).send(user) 
+    })
+}
