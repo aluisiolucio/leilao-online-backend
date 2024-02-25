@@ -1,9 +1,9 @@
 import { HTTPError } from "./httpError"
 
-export function schemaError(schema) {
+export function schemaError(schema: any) {
     const formatted = schema.error.format()
-    const proprerty = Object.keys(formatted)[1]
-    const message = formatted.name?._errors[0] || formatted.email?._errors[0] || formatted.password?._errors[0] || 'Corpo da requisição inválido'
+    const property = Object.keys(formatted)[1]
+    const message = formatted[property]?._errors[0] || 'Corpo da requisição inválido'
 
-    throw new HTTPError(400, `${proprerty}: ${message}`)
+    throw new HTTPError(400, `${property}: ${message}`)
 }
