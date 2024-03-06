@@ -1,14 +1,18 @@
 import fastify from "fastify";
 
+import { HTTPError } from "./errors/httpError";
 import { authHandler } from "./hooks/authHandler";
 
 import { signUp, signIn } from "./routes/auth";
-import { HTTPError } from "./errors/httpError";
+import { getAuction, postAuction } from "./routes/auction";
 
-const app = fastify({ logger: true })
+const app = fastify()
 
-app.register(signUp, { prefix: '/api/auction' })
-app.register(signIn, { prefix: '/api/auction' })
+app.register(signUp, { prefix: '/api/auth' })
+app.register(signIn, { prefix: '/api/auth' })
+
+app.register(postAuction, { prefix: '/api/auction' })
+app.register(getAuction, { prefix: '/api/auction' })
 
 app.addHook('preHandler', authHandler)
 

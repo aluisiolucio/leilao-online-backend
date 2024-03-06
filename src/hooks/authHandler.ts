@@ -17,8 +17,15 @@ export function authHandler(request: FastifyRequest, reply: FastifyReply, done: 
             if (!decoded) {
                 return reply.status(401).send({ statusCode: 401, message: 'Token inválido' })
             }
+
+            request.user = decoded
         }
     } catch (error) {
+
+        if (error instanceof jwt.JsonWebTokenError) {
+            return reply.status(401).send({ statusCode: 401, message: 'Token inválido' })
+        }
+
         console.error('Erro ao executar o Hook (authHandler)', error)
 
         reply.status(500).send({ statusCode: 500, message: 'Erro interno no servidor' })
