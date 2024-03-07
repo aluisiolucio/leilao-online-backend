@@ -4,7 +4,7 @@ import { HTTPError } from "./errors/httpError";
 import { authHandler } from "./hooks/authHandler";
 
 import { signUp, signIn } from "./routes/auth";
-import { getAuction, postAuction } from "./routes/auction";
+import { deleteAuction, getAuction, getAuctionById, postAuction, updateAuction } from "./routes/auction";
 
 const app = fastify()
 
@@ -13,6 +13,9 @@ app.register(signIn, { prefix: '/api/auth' })
 
 app.register(postAuction, { prefix: '/api/auction' })
 app.register(getAuction, { prefix: '/api/auction' })
+app.register(getAuctionById, { prefix: '/api/auction' })
+app.register(updateAuction, { prefix: '/api/auction' })
+app.register(deleteAuction, { prefix: '/api/auction' })
 
 app.addHook('preHandler', authHandler)
 
@@ -21,6 +24,7 @@ app.setErrorHandler((error: HTTPError, request, reply) => {
     reply.status(error.statusCode).send({ statusCode: error.statusCode, message: error.message })
   }
 
+  console.log(error)
   reply.status(500).send({ statusCode: 500, message: 'Erro Interno no Servidor' })
 })
 

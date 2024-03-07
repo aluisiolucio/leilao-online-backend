@@ -45,7 +45,7 @@ model Batch {
   especification String
   contactName    String
   contactPhone   String
-  auction        Auction       @relation(fields: [auctionId], references: [id])
+  auction        Auction       @relation(fields: [auctionId], references: [id], onDelete: Cascade)
   auctionId      String
   Inscription    Inscription[]
 

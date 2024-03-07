@@ -23,9 +23,7 @@ export class AuthController {
 
         const { name, email, password } = createUserSchema.data
         const authUseCase = new AuthUseCase(this.authRepository)
-        const user = await authUseCase.createUser(name, email, password)
-
-        return user
+        return await authUseCase.createUser(name, email, password)
     }
 
     public async signIn(requestBody: unknown) {
@@ -36,8 +34,6 @@ export class AuthController {
 
         const { email, password } = signInSchema.data
         const authUseCase = new AuthUseCase(this.authRepository)
-        const user = await authUseCase.authenticate(email, password)
-
-        return user
+        return await authUseCase.authenticate(email, password)
     }
 }
