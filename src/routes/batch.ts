@@ -21,3 +21,23 @@ export async function getBatchById(app: FastifyInstance) {
         return reply.status(200).send(batch)
     })
 }
+
+export async function putBatch(app: FastifyInstance) {
+    app.put('/:id', async (request, reply) => {
+        const controller = new BatchController()
+        
+        const batch = await controller.updateBatch(request.params.id, request.body)
+
+        return reply.status(200).send(batch)
+    })
+}
+
+export async function deleteBatch(app: FastifyInstance) {
+    app.delete('/:id', async (request, reply) => {
+        const controller = new BatchController()
+        
+        await controller.deleteBatch(request.params.id)
+
+        return reply.status(204).send()
+    })
+}

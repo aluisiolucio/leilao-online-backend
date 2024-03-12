@@ -34,4 +34,48 @@ export class BatchRepository implements IBatchRepository {
 
         return batch
     }
+
+    public async updateBatch(id: string, data: BatchData): Promise<Batch> {
+        try {
+            const batch = await prisma.batch.update({
+                where: {
+                    id
+                },
+                data: {
+                    title: data.title,
+                    price: data.price,
+                    startDateTime: data.startDateTime,
+                    especification: data.especification,
+                    contactName: data.contact.name,
+                    contactPhone: data.contact.phone
+                }
+            })
+
+            return batch
+        } catch (error: any) {
+            if(error.code === 'P2025') {
+                throw new HTTPError(404, 'Leilão não encontrado')
+            }
+
+            console.log(error)
+            throw new HTTPError(400, 'Erro ao atualizar leilão')
+        }
+    }
+
+    public async deleteBatch(id: string): Promise<void> {
+        try {
+            await prisma.batch.delete({
+                where: {
+                    id
+                }
+            })
+        } catch (error: any) {
+            if(error.code === 'P2025') {
+                throw new HTTPError(404, 'Lote não encontrado')
+            }
+
+            console.log(error)
+            throw new HTTPError(400, 'Erro ao deletar lote')
+        }
+    }
 }

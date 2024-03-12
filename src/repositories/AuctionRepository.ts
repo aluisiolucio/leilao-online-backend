@@ -4,7 +4,7 @@ import { IAuctionRepository } from './ports/AuctionRepositoryInterface'
 import { HTTPError } from '../errors/httpError'
 
 export class AuctionRepository implements IAuctionRepository {
-    public async createAuction(title: string, description: string, currentUser: string): Promise<object> {
+    public async createAuction(title: string, description: string, currentUser: string): Promise<Auction> {
         const auction = await prisma.auction.create({
             data: {
                 title,
@@ -13,7 +13,7 @@ export class AuctionRepository implements IAuctionRepository {
             }
         })
 
-        return { id: auction.id, title: auction.title, description: auction.description }
+        return auction
     }
 
     public async getAuction(): Promise<object> {
@@ -40,7 +40,7 @@ export class AuctionRepository implements IAuctionRepository {
         return auction
     }
 
-    public async updateAuction(id: string, title: string, description: string): Promise<object> {
+    public async updateAuction(id: string, title: string, description: string): Promise<Auction> {
         try {
             const auction = await prisma.auction.update({
                 where: {
@@ -52,7 +52,7 @@ export class AuctionRepository implements IAuctionRepository {
                 }
             })
 
-            return { id: auction.id }
+            return auction
         } catch (error: any) {
             if(error.code === 'P2025') {
                 throw new HTTPError(404, 'Leilão não encontrado')

@@ -5,7 +5,13 @@ export class AuctionUseCase {
   constructor(private readonly auctionRepository: IAuctionRepository) {}
 
     public async createAuction(title: string, description: string, currentUser: string) {
-        return await this.auctionRepository.createAuction(title, description, currentUser)
+        const auction = await this.auctionRepository.createAuction(title, description, currentUser)
+
+        return {
+            id: auction.id,
+            title: auction.title,
+            description: auction.description
+        }
     }
 
     public async getAuction() {
@@ -38,7 +44,11 @@ export class AuctionUseCase {
     }
 
     public async updateAuction(id: string, title: string, description: string) {
-        return await this.auctionRepository.updateAuction(id, title, description)
+        const auction = await this.auctionRepository.updateAuction(id, title, description)
+
+        return {
+            id: auction.id
+        }
     }
 
     public async deleteAuction(id: string) {

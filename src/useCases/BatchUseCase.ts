@@ -46,4 +46,16 @@ export class BatchUseCase {
         } 
     }
   }
+
+  public async updateBatch(id: string, data: BatchData) {
+    const batch = await this.batchRepository.updateBatch(id, data)
+
+    return {
+        id: batch.id
+    }
+  }
+
+  public async deleteBatch(id: string) {
+    await this.batchRepository.deleteBatch(id)
+  }
 }
