@@ -14,18 +14,17 @@ export class AuctionController {
     public async createAuction(requestBody: unknown, currentUser: string) {
         const createAuctionSchema = z.object({
             title: z.string(),
-            description: z.string(),
-            startDateTime: z.string().datetime({ offset: true })
+            description: z.string()
         }).safeParse(requestBody)
 
         if (!createAuctionSchema.success) {
             schemaError(createAuctionSchema)
         }
 
-        const { title, description, startDateTime } = createAuctionSchema.data
+        const { title, description } = createAuctionSchema.data
 
         const auctionUseCase = new AuctionUseCase(this.auctionRepository)
-        return await auctionUseCase.createAuction(title, description, startDateTime, currentUser)
+        return await auctionUseCase.createAuction(title, description, currentUser)
     }
 
     public async getAuction() {
@@ -41,22 +40,21 @@ export class AuctionController {
     public async updateAuction(id: string, requestBody: unknown) {
         const updateAuctionSchema = z.object({
             title: z.string().optional(),
-            description: z.string().optional(),
-            startDateTime: z.string().datetime({ offset: true }).optional()
+            description: z.string().optional()
         }).safeParse(requestBody)
 
         if (!updateAuctionSchema.success) {
             schemaError(updateAuctionSchema)
         }
 
-        const { title, description, startDateTime } = updateAuctionSchema.data
+        const { title, description } = updateAuctionSchema.data
 
-        if (!title && !description && !startDateTime) {
+        if (!title && !description) {
             throw new HTTPError(400, 'É necessário informar ao menos um campo para atualização')
         }
 
         const auctionUseCase = new AuctionUseCase(this.auctionRepository)
-        return await auctionUseCase.updateAuction(id, title, description, startDateTime)
+        return await auctionUseCase.updateAuction(id, title, description)
     }
 
     public async deleteAuction(id: string) {

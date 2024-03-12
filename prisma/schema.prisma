@@ -21,15 +21,14 @@ model User {
 }
 
 model Auction {
-  id            String   @id @default(uuid())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now())
-  title         String
-  description   String
-  startDateTime DateTime
-  owner         User     @relation(fields: [ownerId], references: [id])
-  ownerId       String
-  Batch         Batch[]
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+  title       String
+  description String
+  owner       User     @relation(fields: [ownerId], references: [id])
+  ownerId     String
+  Batch       Batch[]
 
   @@map("auctions")
 }
@@ -39,9 +38,10 @@ model Batch {
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @default(now())
   title          String
-  status         Int
+  status         String
   number         Int
   price          Float
+  startDateTime  DateTime
   especification String
   contactName    String
   contactPhone   String

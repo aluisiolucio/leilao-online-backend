@@ -4,17 +4,16 @@ import { IAuctionRepository } from './ports/AuctionRepositoryInterface'
 import { HTTPError } from '../errors/httpError'
 
 export class AuctionRepository implements IAuctionRepository {
-    public async createAuction(title: string, description: string, startDateTime: Date, currentUser: string): Promise<object> {
+    public async createAuction(title: string, description: string, currentUser: string): Promise<object> {
         const auction = await prisma.auction.create({
             data: {
                 title,
                 description,
-                startDateTime,
                 ownerId: currentUser
             }
         })
 
-        return { id: auction.id, title: auction.title, description: auction.description, startDateTime: auction.startDateTime }
+        return { id: auction.id, title: auction.title, description: auction.description }
     }
 
     public async getAuction(): Promise<object> {
@@ -23,7 +22,6 @@ export class AuctionRepository implements IAuctionRepository {
                 id: true,
                 title: true,
                 description: true,
-                startDateTime: true,
                 ownerId: true
             }
         })
@@ -42,7 +40,7 @@ export class AuctionRepository implements IAuctionRepository {
         return auction
     }
 
-    public async updateAuction(id: string, title: string, description: string, startDateTime: Date): Promise<object> {
+    public async updateAuction(id: string, title: string, description: string): Promise<object> {
         try {
             const auction = await prisma.auction.update({
                 where: {
@@ -50,8 +48,7 @@ export class AuctionRepository implements IAuctionRepository {
                 },
                 data: {
                     title,
-                    description,
-                    startDateTime
+                    description
                 }
             })
 

@@ -4,8 +4,8 @@ import { IAuctionRepository } from '../repositories/ports/AuctionRepositoryInter
 export class AuctionUseCase {
   constructor(private readonly auctionRepository: IAuctionRepository) {}
 
-    public async createAuction(title: string, description: string, startDateTime: Date, currentUser: string) {
-        return await this.auctionRepository.createAuction(title, description, startDateTime, currentUser)
+    public async createAuction(title: string, description: string, currentUser: string) {
+        return await this.auctionRepository.createAuction(title, description, currentUser)
     }
 
     public async getAuction() {
@@ -19,18 +19,26 @@ export class AuctionUseCase {
             throw new HTTPError(404, 'Leilão não encontrado')
         }
 
+        let batchsList = []
+        for (let batch of auction.Batch) {
+            batchsList.push({
+                id: batch.id,
+                title: batch.title,
+                number: batch.number
+            })
+        }
+
         return {
             id: auction.id,
             title: auction.title,
             description: auction.description,
-            startDateTime: auction.startDateTime,
             ownerId: auction.ownerId,
-            batchs: auction.Batch
+            batchs: batchsList
         }
     }
 
-    public async updateAuction(id: string, title: string, description: string, startDateTime: Date) {
-        return await this.auctionRepository.updateAuction(id, title, description, startDateTime)
+    public async updateAuction(id: string, title: string, description: string) {
+        return await this.auctionRepository.updateAuction(id, title, description)
     }
 
     public async deleteAuction(id: string) {
