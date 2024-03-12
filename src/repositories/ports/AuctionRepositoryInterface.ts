@@ -6,4 +6,5 @@ export interface IAuctionRepository {
     getAuctionById(id: string): Promise<Auction | null>
     updateAuction(id: string, title: string, description: string): Promise<Auction>
     deleteAuction(id: string): Promise<void>
+    ownerAuction(id: string, currentUser: string): Promise<boolean>
 }

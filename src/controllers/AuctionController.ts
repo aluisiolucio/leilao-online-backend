@@ -32,9 +32,9 @@ export class AuctionController {
         return await auctionUseCase.getAuction()
     }
 
-    public async getAuctionById(id: string) {
+    public async getAuctionById(id: string, currentUser: string) {
         const auctionUseCase = new AuctionUseCase(this.auctionRepository)
-        return await auctionUseCase.getAuctionById(id)
+        return await auctionUseCase.getAuctionById(id, currentUser)
     }
 
     public async updateAuction(id: string, requestBody: unknown) {

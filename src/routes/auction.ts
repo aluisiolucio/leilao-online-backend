@@ -26,7 +26,7 @@ export async function getAuctionById(app: FastifyInstance) {
     app.get('/:id', async (request, reply) => {
         const controller = new AuctionController()
         
-        const auction = await controller.getAuctionById(request.params.id)
+        const auction = await controller.getAuctionById(request.params.id, request.user.id)
 
         return reply.status(200).send(auction)
     })

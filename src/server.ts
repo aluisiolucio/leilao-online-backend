@@ -5,7 +5,7 @@ import { authHandler } from "./hooks/authHandler";
 
 import { signUp, signIn } from "./routes/auth";
 import { deleteAuction, getAuction, getAuctionById, postAuction, updateAuction } from "./routes/auction";
-import { deleteBatch, getBatchById, postBatch, putBatch } from "./routes/batch";
+import { deleteBatch, enrollUserInBatch, getBatchById, postBatch, putBatch } from "./routes/batch";
 
 const app = fastify()
 
@@ -22,6 +22,7 @@ app.register(postBatch, { prefix: '/api/batch' })
 app.register(getBatchById, { prefix: '/api/batch' })
 app.register(putBatch, { prefix: '/api/batch' })
 app.register(deleteBatch, { prefix: '/api/batch' })
+app.register(enrollUserInBatch, { prefix: '/api/batch' })
 
 app.addHook('preHandler', authHandler)
 

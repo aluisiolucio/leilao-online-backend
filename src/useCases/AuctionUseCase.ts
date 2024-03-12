@@ -18,12 +18,14 @@ export class AuctionUseCase {
         return await this.auctionRepository.getAuction()
     }
 
-    public async getAuctionById(id: string) {
+    public async getAuctionById(id: string, currentUser: string) {
         const auction = await this.auctionRepository.getAuctionById(id)
 
         if (!auction) {
             throw new HTTPError(404, 'Leilão não encontrado')
         }
+
+        const isOwner = auction.ownerId === currentUser
 
         let batchsList = []
         for (let batch of auction.Batch) {
@@ -39,6 +41,7 @@ export class AuctionUseCase {
             title: auction.title,
             description: auction.description,
             ownerId: auction.ownerId,
+            isOwner: isOwner,
             batchs: batchsList
         }
     }

@@ -78,4 +78,34 @@ export class BatchRepository implements IBatchRepository {
             throw new HTTPError(400, 'Erro ao deletar lote')
         }
     }
+
+    public async batchExists(id: string): Promise<boolean> {
+        const batch = await prisma.batch.findUnique({
+            where: {
+                id
+            }
+        })
+
+        return !!batch
+    }
+
+    public async enrollUserInBatch(userId: string, batchId: string): Promise<void> {
+        await prisma.inscription.create({
+            data: {
+                userId,
+                batchId
+            }
+        })
+    }
+
+    public async alreadyEnrolled(userId: string, batchId: string): Promise<boolean> {
+        const inscription = await prisma.inscription.findFirst({
+            where: {
+                userId,
+                batchId
+            }
+        })
+
+        return !!inscription
+    }
 }

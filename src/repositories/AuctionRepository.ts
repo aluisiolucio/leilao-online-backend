@@ -80,4 +80,15 @@ export class AuctionRepository implements IAuctionRepository {
             
         }
     }
+
+    public async ownerAuction(id: string, currentUser: string): Promise<boolean> {
+        const auction = await prisma.auction.findFirst({
+            where: {
+                id,
+                ownerId: currentUser
+            }
+        })
+
+        return !!auction
+    }
 }

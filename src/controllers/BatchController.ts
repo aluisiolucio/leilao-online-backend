@@ -4,12 +4,15 @@ import { HTTPError } from '../errors/httpError';
 import { BatchRepository } from '../repositories/BatchRepository';
 import { BatchData } from '../types/batch';
 import { BatchUseCase } from '../useCases/BatchUseCase';
+import { AuctionRepository } from '../repositories/AuctionRepository';
 
 export class BatchController {
     private batchRepository: BatchRepository
+    private auctionRepository: AuctionRepository
 
     constructor() {
         this.batchRepository = new BatchRepository()
+        this.auctionRepository = new AuctionRepository()
     }
 
     public async createBatch(requestBody: unknown) {
@@ -31,12 +34,12 @@ export class BatchController {
 
         const batchData = bacthSchema.data as BatchData
 
-        const batch = new BatchUseCase(this.batchRepository)
+        const batch = new BatchUseCase(this.batchRepository, this.auctionRepository)
         return await batch.createBatch(batchData)
     }
 
     public async getBatchById(id: string) {
-        const batch = new BatchUseCase(this.batchRepository)
+        const batch = new BatchUseCase(this.batchRepository, this.auctionRepository)
         return await batch.getBatchById(id)
     }
 
@@ -67,13 +70,29 @@ export class BatchController {
 
         const batchData = bacthSchema.data as BatchData
 
-        const batch = new BatchUseCase(this.batchRepository)
+        const batch = new BatchUseCase(this.batchRepository, this.auctionRepository)
         return await batch.updateBatch(id, batchData)
     }
 
     public async deleteBatch(id: string) {
-        const batch = new BatchUseCase(this.batchRepository)
+        const batch = new BatchUseCase(this.batchRepository, this.auctionRepository)
         
         await batch.deleteBatch(id)
+    }
+
+    public async enrollUserInBatch(userId: string, requestBody: unknown) {
+        const enrollSchema = z.object({
+            batchId: z.string(),
+            auctionId: z.string()
+        }).safeParse(requestBody)
+
+        if (!enrollSchema.success) {
+            schemaError(enrollSchema)
+        }
+
+        const { batchId, auctionId } = enrollSchema.data
+        const batch = new BatchUseCase(this.batchRepository, this.auctionRepository)
+        
+        await batch.enrollUserInBatch(userId, batchId, auctionId)
     }
 }

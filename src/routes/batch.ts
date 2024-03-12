@@ -41,3 +41,13 @@ export async function deleteBatch(app: FastifyInstance) {
         return reply.status(204).send()
     })
 }
+
+export async function enrollUserInBatch(app: FastifyInstance) {
+    app.post('/enroll', async (request, reply) => {
+        const controller = new BatchController()
+        
+        await controller.enrollUserInBatch(request.user.id, request.body)
+
+        return reply.status(204).send()
+    })
+}
