@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { AuthRepository } from '../repositories/AuthRepository';
 import { AuthUseCase } from '../useCases/AuthUseCase';
 import { schemaError } from '../errors/schemaError';
+import { HTTPError } from '../errors/httpError';
 
 export class AuthController {
     private authRepository: AuthRepository
@@ -31,6 +32,10 @@ export class AuthController {
             email: z.string().email(),
             password: z.string(),
         }).safeParse(requestBody)
+
+        if (!signInSchema.success) {
+            throw new HTTPError(400, 'Email ou senha incorretos')
+        }
 
         const { email, password } = signInSchema.data
         const authUseCase = new AuthUseCase(this.authRepository)

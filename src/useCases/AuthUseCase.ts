@@ -10,7 +10,7 @@ export class AuthUseCase {
     const emailExists = await this.userRepository.emailExists(email)
 
     if (emailExists) {
-      throw new HTTPError(400, 'Email already exists')
+      throw new HTTPError(400, 'Email já cadastrado')
     }
 
     const passwordHash = await bcrypt.hash(password, 10)

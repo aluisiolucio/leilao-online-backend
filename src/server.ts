@@ -1,4 +1,5 @@
 import fastify from "fastify";
+import cors from '@fastify/cors'
 
 import { HTTPError } from "./errors/httpError";
 import { authHandler } from "./hooks/authHandler";
@@ -8,6 +9,11 @@ import { deleteAuction, getAuction, getAuctionById, postAuction, updateAuction }
 import { deleteBatch, enrollUserInBatch, getBatchById, postBatch, putBatch } from "./routes/batch";
 
 const app = fastify()
+
+app.register(cors, {
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE']
+})
 
 app.register(signUp, { prefix: '/api/auth' })
 app.register(signIn, { prefix: '/api/auth' })
