@@ -1,11 +1,14 @@
 import { User } from '@prisma/client'
 import { prisma } from '../db/prisma'
 import { IAuthRepository } from './ports/AuthRepositoryInterface'
+import { formatTimezone } from '../utils/formatTimezone'
 
 export class AuthRepository implements IAuthRepository {
     public async createUser(name: string, email: string, password: string): Promise<object> {
         const user = await prisma.user.create({
             data: {
+                createdAt: formatTimezone(new Date()),
+                updatedAt: formatTimezone(new Date()),
                 name,
                 email,
                 password,

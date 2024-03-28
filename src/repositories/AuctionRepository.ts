@@ -2,13 +2,17 @@ import { Auction } from '@prisma/client'
 import { prisma } from '../db/prisma'
 import { IAuctionRepository } from './ports/AuctionRepositoryInterface'
 import { HTTPError } from '../errors/httpError'
+import { formatTimezone } from '../utils/formatTimezone'
 
 export class AuctionRepository implements IAuctionRepository {
-    public async createAuction(title: string, description: string, currentUser: string): Promise<Auction> {
+    public async createAuction(title: string, description: string, imagePath: string, currentUser: string): Promise<Auction> {
         const auction = await prisma.auction.create({
             data: {
+                createdAt: formatTimezone(new Date()),
+                updatedAt: formatTimezone(new Date()),
                 title,
                 description,
+                imagePath,
                 ownerId: currentUser
             }
         })
@@ -16,15 +20,101 @@ export class AuctionRepository implements IAuctionRepository {
         return auction
     }
 
-    public async getAuction(): Promise<object> {
-        const auctions = await prisma.auction.findMany({
-            select: {
-                id: true,
-                title: true,
-                description: true,
-                ownerId: true
-            }
-        })
+    public async getAuctions(limite: number, currentUser: string): Promise<object> {
+        let auctions
+        
+        if (limite !== -1) {
+            auctions = await prisma.auction.findMany({
+                select: {
+                    id: true,
+                    title: true,
+                    description: true,
+                    imagePath: true,
+                    ownerId: true
+                },
+                where: {
+                    ownerId: {
+                        not: currentUser
+                    }
+                },
+                orderBy: {
+                    createdAt: 'asc'
+                },
+                take: limite
+            })
+        } else {
+            auctions = await prisma.auction.findMany({
+                select: {
+                    id: true,
+                    title: true,
+                    description: true,
+                    imagePath: true,
+                    ownerId: true
+                },
+                where: {
+                    ownerId: {
+                        not: currentUser
+                    }
+                },
+                orderBy: {
+                    createdAt: 'asc'
+                }
+            })
+        }
+
+        return auctions
+    }
+
+    public async getAuctionsByQuery(dataInicial: Date, dataFinal: Date, limite: number, currentUser: string): Promise<object> {        
+        let auctions
+        
+        if (limite !== -1) {
+            auctions = await prisma.auction.findMany({
+                select: {
+                    id: true,
+                    title: true,
+                    description: true,
+                    imagePath: true,
+                    ownerId: true
+                },
+                where: {
+                    ownerId: {
+                        not: currentUser
+                    },
+                    createdAt: {
+                        gte: dataInicial,
+                        lte: dataFinal 
+                    }
+                },
+                orderBy: {
+                    createdAt: 'desc'
+                },
+                take: limite
+            })
+        } else {
+            auctions = await prisma.auction.findMany({
+                select: {
+                    id: true,
+                    title: true,
+                    description: true,
+                    imagePath: true,
+                    ownerId: true
+                },
+                where: {
+                    ownerId: {
+                        not: currentUser
+                    },
+                    createdAt: {
+                        gte: dataInicial,
+                        lte: dataFinal
+                    }
+                },
+                orderBy: {
+                    createdAt: 'desc'
+                }
+            })
+        }
+
 
         return auctions
     }

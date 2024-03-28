@@ -4,12 +4,15 @@ import { IBatchRepository } from './ports/BatchRepositoryInterface'
 import { HTTPError } from '../errors/httpError'
 import { BatchData } from '../types/batch'
 import { batchStatusEnum } from '../types/batchStatus'
+import { formatTimezone } from '../utils/formatTimezone'
 
 
 export class BatchRepository implements IBatchRepository {
     public async createBatch(data: BatchData): Promise<Batch> {
         const batch = await prisma.batch.create({
             data: {
+                createdAt: formatTimezone(new Date()),
+                updatedAt: formatTimezone(new Date()),
                 auctionId: data.auctionId,
                 title: data.title,
                 price: data.price,
@@ -92,6 +95,8 @@ export class BatchRepository implements IBatchRepository {
     public async enrollUserInBatch(userId: string, batchId: string): Promise<void> {
         await prisma.inscription.create({
             data: {
+                createdAt: formatTimezone(new Date()),
+                updatedAt: formatTimezone(new Date()),
                 userId,
                 batchId
             }

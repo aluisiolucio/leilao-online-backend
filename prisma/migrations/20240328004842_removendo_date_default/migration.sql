@@ -1,0 +1,12 @@
+-- AlterTable
+ALTER TABLE "auctions" ALTER COLUMN "createdAt" DROP DEFAULT,
+ALTER COLUMN "createdAt" SET DATA TYPE TIMESTAMP(3),
+ALTER COLUMN "updatedAt" DROP DEFAULT;
+
+-- AlterTable
+ALTER TABLE "batches" ALTER COLUMN "createdAt" DROP DEFAULT,
+ALTER COLUMN "updatedAt" DROP DEFAULT;
+
+-- AlterTable
+ALTER TABLE "inscriptions" ALTER COLUMN "createdAt" DROP DEFAULT,
+ALTER COLUMN "updatedAt" DROP DEFAULT;

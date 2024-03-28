@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "users" ALTER COLUMN "createdAt" DROP DEFAULT,
+ALTER COLUMN "updatedAt" DROP DEFAULT;

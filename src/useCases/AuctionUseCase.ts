@@ -1,11 +1,16 @@
 import { HTTPError } from '../errors/httpError'
 import { IAuctionRepository } from '../repositories/ports/AuctionRepositoryInterface'
 
+type QueryAuction = {
+    dataInicial?: string
+    dataFinal?: string
+    limite?: number
+}
 export class AuctionUseCase {
   constructor(private readonly auctionRepository: IAuctionRepository) {}
 
-    public async createAuction(title: string, description: string, currentUser: string) {
-        const auction = await this.auctionRepository.createAuction(title, description, currentUser)
+    public async createAuction(title: string, description: string, imagePath: string, currentUser: string) {
+        const auction = await this.auctionRepository.createAuction(title, description, imagePath, currentUser)
 
         return {
             id: auction.id,
@@ -14,8 +19,16 @@ export class AuctionUseCase {
         }
     }
 
-    public async getAuction() {
-        return await this.auctionRepository.getAuction()
+    public async getAuction(query: QueryAuction, currentUser: string) {
+        const dataInicial = query.dataInicial ? new Date(query.dataInicial) : null
+        const dataFinal = query.dataFinal ? new Date(query.dataFinal) : null
+        const limite = Number(query.limite) || -1
+
+        if (dataInicial && dataFinal && dataFinal > dataInicial) {
+            return await this.auctionRepository.getAuctionsByQuery(dataInicial, dataFinal, limite, currentUser)
+        }
+
+        return await this.auctionRepository.getAuctions(limite, currentUser)
     }
 
     public async getAuctionById(id: string, currentUser: string) {

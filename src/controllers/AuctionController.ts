@@ -14,22 +14,23 @@ export class AuctionController {
     public async createAuction(requestBody: unknown, currentUser: string) {
         const createAuctionSchema = z.object({
             title: z.string(),
-            description: z.string()
+            description: z.string(),
+            imagePath: z.string()
         }).safeParse(requestBody)
 
         if (!createAuctionSchema.success) {
             schemaError(createAuctionSchema)
         }
 
-        const { title, description } = createAuctionSchema.data
+        const { title, description, imagePath } = createAuctionSchema.data
 
         const auctionUseCase = new AuctionUseCase(this.auctionRepository)
-        return await auctionUseCase.createAuction(title, description, currentUser)
+        return await auctionUseCase.createAuction(title, description, imagePath, currentUser)
     }
 
-    public async getAuction() {
+    public async getAuction(query: unknown, currentUser: string) {
         const auctionUseCase = new AuctionUseCase(this.auctionRepository)
-        return await auctionUseCase.getAuction()
+        return await auctionUseCase.getAuction(query, currentUser)
     }
 
     public async getAuctionById(id: string, currentUser: string) {
