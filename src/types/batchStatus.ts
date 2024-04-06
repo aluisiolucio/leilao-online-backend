@@ -1,6 +1,6 @@
 export enum batchStatusEnum {
-    OPEN = 'Open',
-    IN_PROGRESS = 'In Progress',
-    CLOSED = 'Closed',
-    WAITING_FOR_PARTICIPANTS = 'Waiting for Participants'
+    OPEN = 'Aberto',
+    IN_PROGRESS = 'Em andamento',
+    CLOSED = 'Fechado',
+    WAITING_FOR_PARTICIPANTS = 'Aguardando participantes'
 }

@@ -3,16 +3,19 @@ import { prisma } from '../db/prisma'
 import { IAuctionRepository } from './ports/AuctionRepositoryInterface'
 import { HTTPError } from '../errors/httpError'
 import { formatTimezone } from '../utils/formatTimezone'
+import { AuctionData } from '../types/auction'
 
 export class AuctionRepository implements IAuctionRepository {
-    public async createAuction(title: string, description: string, imagePath: string, currentUser: string): Promise<Auction> {
+    public async createAuction(auctionData: AuctionData, currentUser: string): Promise<Auction> {
         const auction = await prisma.auction.create({
             data: {
                 createdAt: formatTimezone(new Date()),
                 updatedAt: formatTimezone(new Date()),
-                title,
-                description,
-                imagePath,
+                title: auctionData.title,
+                description: auctionData.description,
+                imagePath: auctionData.imagePath,
+                contactName: auctionData.contact.name,
+                contactPhone: auctionData.contact.phone,
                 ownerId: currentUser
             }
         })
@@ -115,8 +118,51 @@ export class AuctionRepository implements IAuctionRepository {
             })
         }
 
-
         return auctions
+    }
+
+    public async getAuctionsByUser(currentUser: string, limite: number): Promise<object> {
+        let auctions
+        
+        if (limite !== -1) {
+            auctions = await prisma.auction.findMany({
+                where: {
+                    ownerId: currentUser
+                },
+                orderBy: {
+                    createdAt: 'desc'
+                },
+                take: limite,
+                include: {
+                    Batch: true
+                }                 
+            })
+        } else {
+            auctions = await prisma.auction.findMany({
+                where: {
+                    ownerId: currentUser
+                },
+                orderBy: {
+                    createdAt: 'desc'
+                },
+                include: {
+                    Batch: true
+                }
+            })
+        }
+
+        auctions = auctions.map(auction => ({
+            ...auction,
+            batchCount: auction.Batch.length
+        }));
+
+        const auctionsList = auctions.map(auction => ({
+            id: auction.id,
+            title: auction.title,
+            batchCount: auction.batchCount
+        }))
+
+        return auctionsList
     }
 
     public async getAuctionById(id: string): Promise<Auction | null> {

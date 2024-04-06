@@ -2,9 +2,9 @@ import { z } from 'zod';
 import { schemaError } from '../errors/schemaError';
 import { HTTPError } from '../errors/httpError';
 import { BatchRepository } from '../repositories/BatchRepository';
-import { BatchData } from '../types/batch';
 import { BatchUseCase } from '../useCases/BatchUseCase';
 import { AuctionRepository } from '../repositories/AuctionRepository';
+import { BatchData } from '../types/batch';
 
 export class BatchController {
     private batchRepository: BatchRepository
@@ -20,8 +20,10 @@ export class BatchController {
             auctionId: z.string(),
             title: z.string(),
             price: z.number(),
+            code: z.number(),
             startDateTime: z.string(),
-            especification: z.string(),
+            specification: z.string(),
+            images: z.array(z.string()),
             contact: z.object({
                 name: z.string(),
                 phone: z.string()
@@ -48,8 +50,9 @@ export class BatchController {
             auctionId: z.string(),
             title: z.string().optional(),
             price: z.number().optional(),
+            code: z.number().optional(),
             startDateTime: z.string().optional(),
-            especification: z.string().optional(),
+            specification: z.string().optional(),
             contact: z.object({
                 name: z.string().optional(),
                 phone: z.string().optional()

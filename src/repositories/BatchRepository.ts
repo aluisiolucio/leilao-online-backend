@@ -2,9 +2,9 @@ import { Batch } from '@prisma/client'
 import { prisma } from '../db/prisma'
 import { IBatchRepository } from './ports/BatchRepositoryInterface'
 import { HTTPError } from '../errors/httpError'
-import { BatchData } from '../types/batch'
 import { batchStatusEnum } from '../types/batchStatus'
 import { formatTimezone } from '../utils/formatTimezone'
+import { BatchData } from '../types/batch'
 
 
 export class BatchRepository implements IBatchRepository {
@@ -13,15 +13,18 @@ export class BatchRepository implements IBatchRepository {
             data: {
                 createdAt: formatTimezone(new Date()),
                 updatedAt: formatTimezone(new Date()),
-                auctionId: data.auctionId,
+                auctionId: data.auctionId || '',
                 title: data.title,
+                status: batchStatusEnum.OPEN,
+                code: data.code,
                 price: data.price,
                 startDateTime: data.startDateTime,
-                especification: data.especification,
-                contactName: data.contact.name,
-                contactPhone: data.contact.phone,
-                number: Math.floor(Math.random() * 1000000) + 1,
-                status: batchStatusEnum.OPEN
+                specification: data.specification,
+                imagePath1: data.imagesPath[0],
+                imagePath2: data.imagesPath[1],
+                imagePath3: data.imagesPath[2],
+                imagePath4: data.imagesPath[3],
+                imagePath5: data.imagesPath[4],
             }
         })
 
@@ -48,9 +51,7 @@ export class BatchRepository implements IBatchRepository {
                     title: data.title,
                     price: data.price,
                     startDateTime: data.startDateTime,
-                    especification: data.especification,
-                    contactName: data.contact.name,
-                    contactPhone: data.contact.phone
+                    specification: data.specification,
                 }
             })
 

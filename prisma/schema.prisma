@@ -21,34 +21,39 @@ model User {
 }
 
 model Auction {
-  id          String   @id @default(uuid())
-  createdAt   DateTime
-  updatedAt   DateTime
-  title       String
-  description String
-  imagePath   String
-  owner       User     @relation(fields: [ownerId], references: [id])
-  ownerId     String
-  Batch       Batch[]
+  id           String   @id @default(uuid())
+  createdAt    DateTime
+  updatedAt    DateTime
+  title        String
+  description  String
+  imagePath    String
+  contactName  String
+  contactPhone String
+  owner        User     @relation(fields: [ownerId], references: [id])
+  ownerId      String
+  Batch        Batch[]
 
   @@map("auctions")
 }
 
 model Batch {
-  id             String        @id @default(uuid())
-  createdAt      DateTime
-  updatedAt      DateTime
-  title          String
-  status         String
-  number         Int
-  price          Float
-  startDateTime  DateTime
-  especification String
-  contactName    String
-  contactPhone   String
-  auction        Auction       @relation(fields: [auctionId], references: [id], onDelete: Cascade)
-  auctionId      String
-  Inscription    Inscription[]
+  id            String        @id @default(uuid())
+  createdAt     DateTime
+  updatedAt     DateTime
+  title         String
+  status        String
+  code          Int
+  price         Float
+  startDateTime DateTime
+  specification String
+  imagePath1    String
+  imagePath2    String
+  imagePath3    String
+  imagePath4    String
+  imagePath5    String
+  auction       Auction       @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+  auctionId     String
+  Inscription   Inscription[]
 
   @@map("batches")
 }

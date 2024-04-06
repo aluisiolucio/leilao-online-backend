@@ -10,18 +10,7 @@ export class BatchUseCase {
     const batch = await this.batchRepository.createBatch(data)
 
     return { 
-        id: batch.id,
-        auctionId: batch.auctionId,
-        title: batch.title, 
-        price: batch.price, 
-        startDateTime: batch.startDateTime, 
-        especification: batch.especification,
-        number: batch.number,
-        status: batch.status, 
-        contact: { 
-            name: batch.contactName, 
-            phone: batch.contactPhone 
-        } 
+        id: batch.id
     }
   }
 
@@ -38,13 +27,10 @@ export class BatchUseCase {
         title: batch.title, 
         price: batch.price, 
         startDateTime: batch.startDateTime, 
-        especification: batch.especification,
-        number: batch.number,
+        especification: batch.specification,
+        code: batch.code,
         status: batch.status, 
-        contact: { 
-            name: batch.contactName, 
-            phone: batch.contactPhone 
-        } 
+        images: [batch.imagePath1, batch.imagePath2, batch.imagePath3, batch.imagePath4, batch.imagePath5],
     }
   }
 

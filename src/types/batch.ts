@@ -1,11 +1,10 @@
 export type BatchData = {
-    auctionId: string
-    title: string
-    price: number
-    startDateTime: Date
-    especification: string
-    contact: {
-        name: string
-        phone: string
-    }
-}
+    auctionId: string | null;
+    title: string;
+    price: number;
+    code: number;
+    startDateTime: Date;
+    specification: string;
+    imagesPath: string[];
+    action?: string;
+};
