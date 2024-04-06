@@ -22,6 +22,16 @@ export async function getBatchById(app: FastifyInstance) {
     })
 }
 
+export async function getEnrolledBatchs(app: FastifyInstance) {
+    app.get('/enrolled', async (request, reply) => {
+        const controller = new BatchController()
+        
+        const batchs = await controller.getEnrolledBatchs(request.user.id)
+
+        return reply.status(200).send(batchs)
+    })
+}
+
 export async function putBatch(app: FastifyInstance) {
     app.put('/:id', async (request, reply) => {
         const controller = new BatchController()

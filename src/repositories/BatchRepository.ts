@@ -42,6 +42,26 @@ export class BatchRepository implements IBatchRepository {
         return batch
     }
 
+    public async getEnrolledBatchs(currentUser: string): Promise<Batch[]> {
+        const batchs = await prisma.batch.findMany({
+            where: {
+                Inscription: {
+                    some: {
+                        userId: currentUser
+                    }
+                }
+            },
+            include: {
+                auction: true
+            },
+            orderBy: {
+                startDateTime: 'desc'
+            }
+        })
+
+        return batchs
+    }
+
     public async updateBatch(id: string, data: BatchData): Promise<Batch> {
         try {
             const batch = await prisma.batch.update({

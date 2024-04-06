@@ -35,6 +35,26 @@ export class BatchUseCase {
     }
   }
 
+  public async getEnrolledBatchs(currentUser: string) {
+    const batchs = await this.batchRepository.getEnrolledBatchs(currentUser)
+
+    let enrolledBatchs: any = []
+    batchs.map(batch => {
+        enrolledBatchs.push({
+            id: batch.id,
+            auctionId: batch.auctionId,
+            auctionTitle: batch.auction.title,
+            title: batch.title, 
+            price: batch.price, 
+            startDateTime: batch.startDateTime,
+            code: batch.code,
+            status: batch.status,
+        })
+    })
+
+    return enrolledBatchs
+  }
+
   public async updateBatch(id: string, data: BatchData) {
     const batch = await this.batchRepository.updateBatch(id, data)
 

@@ -45,6 +45,11 @@ export class BatchController {
         return await batch.getBatchById(id, currentUser)
     }
 
+    public async getEnrolledBatchs(currentUser: string) {
+        const batch = new BatchUseCase(this.batchRepository, this.auctionRepository)
+        return await batch.getEnrolledBatchs(currentUser)
+    }
+
     public async updateBatch(id: string, requestBody: unknown) {
         const bacthSchema = z.object({
             auctionId: z.string(),
