@@ -14,7 +14,7 @@ export class BatchUseCase {
     }
   }
 
-  public async getBatchById(id: string) {
+  public async getBatchById(id: string, correntUser: string) {
     const batch = await this.batchRepository.getBatchById(id)
 
     if (!batch) {
@@ -27,9 +27,10 @@ export class BatchUseCase {
         title: batch.title, 
         price: batch.price, 
         startDateTime: batch.startDateTime, 
-        especification: batch.specification,
+        specification: batch.specification,
         code: batch.code,
-        status: batch.status, 
+        status: batch.status,
+        isEnrolled: await this.batchRepository.alreadyEnrolled(correntUser, batch.id),
         images: [batch.imagePath1, batch.imagePath2, batch.imagePath3, batch.imagePath4, batch.imagePath5],
     }
   }
@@ -59,6 +60,10 @@ export class BatchUseCase {
         throw new HTTPError(400, 'Usuário já inscrito no lote')
     }
 
-    await this.batchRepository.enrollUserInBatch(userId, batchId)
+    const inscription = await this.batchRepository.enrollUserInBatch(userId, batchId)
+
+    return {
+        id: inscription.id
+    }
   }
 }

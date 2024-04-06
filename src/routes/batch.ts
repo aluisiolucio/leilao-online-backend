@@ -16,7 +16,7 @@ export async function getBatchById(app: FastifyInstance) {
     app.get('/:id', async (request, reply) => {
         const controller = new BatchController()
         
-        const batch = await controller.getBatchById(request.params.id)
+        const batch = await controller.getBatchById(request.params.id, request.user.id)
 
         return reply.status(200).send(batch)
     })
@@ -46,8 +46,6 @@ export async function enrollUserInBatch(app: FastifyInstance) {
     app.post('/enroll', async (request, reply) => {
         const controller = new BatchController()
         
-        await controller.enrollUserInBatch(request.user.id, request.body)
-
-        return reply.status(204).send()
+        return await controller.enrollUserInBatch(request.user.id, request.body)
     })
 }

@@ -5,6 +5,7 @@ import { HTTPError } from '../errors/httpError'
 import { batchStatusEnum } from '../types/batchStatus'
 import { formatTimezone } from '../utils/formatTimezone'
 import { BatchData } from '../types/batch'
+import { InscriptionData } from '../types/inscription'
 
 
 export class BatchRepository implements IBatchRepository {
@@ -93,8 +94,8 @@ export class BatchRepository implements IBatchRepository {
         return !!batch
     }
 
-    public async enrollUserInBatch(userId: string, batchId: string): Promise<void> {
-        await prisma.inscription.create({
+    public async enrollUserInBatch(userId: string, batchId: string): Promise<InscriptionData> {
+        const inscription = await prisma.inscription.create({
             data: {
                 createdAt: formatTimezone(new Date()),
                 updatedAt: formatTimezone(new Date()),
@@ -102,6 +103,8 @@ export class BatchRepository implements IBatchRepository {
                 batchId
             }
         })
+
+        return inscription       
     }
 
     public async alreadyEnrolled(userId: string, batchId: string): Promise<boolean> {

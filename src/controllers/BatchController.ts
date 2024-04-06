@@ -40,9 +40,9 @@ export class BatchController {
         return await batch.createBatch(batchData)
     }
 
-    public async getBatchById(id: string) {
+    public async getBatchById(id: string, currentUser: string) {
         const batch = new BatchUseCase(this.batchRepository, this.auctionRepository)
-        return await batch.getBatchById(id)
+        return await batch.getBatchById(id, currentUser)
     }
 
     public async updateBatch(id: string, requestBody: unknown) {
@@ -96,6 +96,6 @@ export class BatchController {
         const { batchId, auctionId } = enrollSchema.data
         const batch = new BatchUseCase(this.batchRepository, this.auctionRepository)
         
-        await batch.enrollUserInBatch(userId, batchId, auctionId)
+        return await batch.enrollUserInBatch(userId, batchId, auctionId)
     }
 }

@@ -15,7 +15,7 @@ export class AuthController {
         const createUserSchema = z.object({
             name: z.string(),
             email: z.string().email(),
-            password: z.string().min(12),
+            password: z.string().min(8),
         }).safeParse(requestBody)
 
         if (!createUserSchema.success) {

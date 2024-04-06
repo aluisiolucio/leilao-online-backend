@@ -76,6 +76,8 @@ export class AuctionUseCase {
                 startDateTime: batch.startDateTime,
                 imagesPath: imagesPath
             })
+
+            imagesPath = []
         }
 
         return {

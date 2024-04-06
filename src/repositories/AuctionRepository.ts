@@ -31,7 +31,6 @@ export class AuctionRepository implements IAuctionRepository {
                 select: {
                     id: true,
                     title: true,
-                    description: true,
                     imagePath: true,
                     ownerId: true
                 },
@@ -41,7 +40,7 @@ export class AuctionRepository implements IAuctionRepository {
                     }
                 },
                 orderBy: {
-                    createdAt: 'asc'
+                    createdAt: 'desc'
                 },
                 take: limite
             })
@@ -50,7 +49,6 @@ export class AuctionRepository implements IAuctionRepository {
                 select: {
                     id: true,
                     title: true,
-                    description: true,
                     imagePath: true,
                     ownerId: true
                 },
@@ -60,7 +58,7 @@ export class AuctionRepository implements IAuctionRepository {
                     }
                 },
                 orderBy: {
-                    createdAt: 'asc'
+                    createdAt: 'desc'
                 }
             })
         }
@@ -90,7 +88,7 @@ export class AuctionRepository implements IAuctionRepository {
                     }
                 },
                 orderBy: {
-                    createdAt: 'desc'
+                    createdAt: 'asc'
                 },
                 take: limite
             })
@@ -113,7 +111,7 @@ export class AuctionRepository implements IAuctionRepository {
                     }
                 },
                 orderBy: {
-                    createdAt: 'desc'
+                    createdAt: 'asc'
                 }
             })
         }
