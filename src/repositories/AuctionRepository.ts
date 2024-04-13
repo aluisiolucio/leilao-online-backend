@@ -47,6 +47,9 @@ export class AuctionRepository implements IAuctionRepository {
             take: limite ? Number(limite) : undefined,
             include: {
                 Batch: true
+            },
+            orderBy: {
+                createdAt: 'desc'
             }
         });
 
@@ -54,6 +57,8 @@ export class AuctionRepository implements IAuctionRepository {
     
         if (isMyAuctions) {
             auctions = auctions.filter(auction => auction.ownerId == currentUser);
+        } else {
+            auctions = auctions.filter(auction => auction.ownerId !== currentUser);
         }
 
         return auctions;
