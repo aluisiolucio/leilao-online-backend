@@ -1,15 +1,9 @@
 import { HTTPError } from '../errors/httpError'
 import { IAuctionRepository } from '../repositories/ports/AuctionRepositoryInterface'
 import { IBatchRepository } from '../repositories/ports/BatchRepositoryInterface'
-import { AuctionData } from '../types/auction'
+import { AuctionData, QueryParamsAuction } from '../types/auction'
 import { BatchData } from '../types/batch'
 
-type QueryAuction = {
-    dataInicial?: string
-    dataFinal?: string
-    limite?: number
-    myAuctions?: boolean
-}
 export class AuctionUseCase {
   constructor(private readonly auctionRepository: IAuctionRepository, private readonly batchRepository: IBatchRepository) {}
 
@@ -35,18 +29,50 @@ export class AuctionUseCase {
         }
     }
 
-    public async getAuction(query: QueryAuction, currentUser: string) {
-        const dataInicial = query.dataInicial ? new Date(query.dataInicial) : null
-        const dataFinal = query.dataFinal ? new Date(query.dataFinal) : null
-        const limite = Number(query.limite) || -1
+    public async getAuctions(params: QueryParamsAuction, currentUser: string) {
+        const auctions = await this.auctionRepository.getAuctions(params, currentUser)
 
-        if (dataInicial && dataFinal && dataFinal > dataInicial) {
-            return await this.auctionRepository.getAuctionsByQuery(dataInicial, dataFinal, limite, currentUser)
-        } else if (query.myAuctions) {
-            return await this.auctionRepository.getAuctionsByUser(currentUser, limite)
-        }
+        let auctionsList: any[] = []
+        auctions.forEach((auction) => {
+            let batchsList: any[] = []
+            let imagesPath: string[] = []
 
-        return await this.auctionRepository.getAuctions(limite, currentUser)
+            auction.Batch.forEach((batch: any) => {
+                imagesPath.push(batch.imagePath1)
+                imagesPath.push(batch.imagePath2)
+                imagesPath.push(batch.imagePath3)
+                imagesPath.push(batch.imagePath4)
+                imagesPath.push(batch.imagePath5)
+
+                batchsList.push({
+                    id: batch.id,
+                    title: batch.title,
+                    code: batch.code,
+                    price: batch.price,
+                    status: batch.status,
+                    startDateTime: batch.startDateTime,
+                    imagesPath: imagesPath
+                })
+
+                imagesPath = []
+            })
+
+            auctionsList.push({
+                id: auction.id,
+                title: auction.title,
+                description: auction.description,
+                ownerId: auction.ownerId,
+                imagePath: auction.imagePath,
+                category: auction.category,
+                contact: {
+                    name: auction.contactName,
+                    phone: auction.contactPhone
+                },
+                batchs: batchsList
+            })
+        })
+
+        return auctionsList
     }
 
     public async getAuctionById(id: string, currentUser: string) {
@@ -87,6 +113,7 @@ export class AuctionUseCase {
             ownerId: auction.ownerId,
             isOwner: isOwner,
             imagePath: auction.imagePath,
+            category: auction.category,
             contact: {
                 name: auction.contactName,
                 phone: auction.contactPhone

@@ -3,7 +3,7 @@ import { schemaError } from '../errors/schemaError';
 import { AuctionRepository } from '../repositories/AuctionRepository';
 import { AuctionUseCase } from '../useCases/AuctionUseCase';
 import { HTTPError } from '../errors/httpError';
-import { AuctionData } from '../types/auction';
+import { AuctionData, QueryParamsAuction } from '../types/auction';
 import { BatchRepository } from '../repositories/BatchRepository';
 
 export class AuctionController {
@@ -20,6 +20,7 @@ export class AuctionController {
             title: z.string(),
             description: z.string(),
             imagePath: z.string(),
+            category: z.string(),
             contact: z.object({
                 name: z.string(),
                 phone: z.string()
@@ -44,9 +45,9 @@ export class AuctionController {
         return await auctionUseCase.createAuction(auctionData, currentUser)
     }
 
-    public async getAuction(query: unknown, currentUser: string) {
+    public async getAuctions(params: QueryParamsAuction, currentUser: string) {
         const auctionUseCase = new AuctionUseCase(this.auctionRepository, this.batchRepository)
-        return await auctionUseCase.getAuction(query, currentUser)
+        return await auctionUseCase.getAuctions(params, currentUser)
     }
 
     public async getAuctionById(id: string, currentUser: string) {

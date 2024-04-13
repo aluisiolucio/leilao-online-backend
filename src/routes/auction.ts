@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { AuctionController } from '../controllers/AuctionController';
+import { QueryParamsAuction } from '../types/auction';
 
 
 export async function postAuction(app: FastifyInstance) {
@@ -16,7 +17,7 @@ export async function getAuction(app: FastifyInstance) {
     app.get('/', async (request, reply) => {
         const controller = new AuctionController()
         
-        const auctions = await controller.getAuction(request.query, request.user.id)
+        const auctions = await controller.getAuctions(request.query as QueryParamsAuction, request.user.id)
 
         return reply.status(200).send(auctions)
     })

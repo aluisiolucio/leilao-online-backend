@@ -1,9 +1,9 @@
-import { Auction } from '@prisma/client'
+import { Auction, Prisma } from '@prisma/client'
 import { prisma } from '../db/prisma'
 import { IAuctionRepository } from './ports/AuctionRepositoryInterface'
 import { HTTPError } from '../errors/httpError'
 import { formatTimezone } from '../utils/formatTimezone'
-import { AuctionData } from '../types/auction'
+import { AuctionData, QueryParamsAuction } from '../types/auction'
 
 export class AuctionRepository implements IAuctionRepository {
     public async createAuction(auctionData: AuctionData, currentUser: string): Promise<Auction> {
@@ -14,6 +14,7 @@ export class AuctionRepository implements IAuctionRepository {
                 title: auctionData.title,
                 description: auctionData.description,
                 imagePath: auctionData.imagePath,
+                category: auctionData.category,
                 contactName: auctionData.contact.name,
                 contactPhone: auctionData.contact.phone,
                 ownerId: currentUser
@@ -23,144 +24,39 @@ export class AuctionRepository implements IAuctionRepository {
         return auction
     }
 
-    public async getAuctions(limite: number, currentUser: string): Promise<object> {
-        let auctions
-        
-        if (limite !== -1) {
-            auctions = await prisma.auction.findMany({
-                select: {
-                    id: true,
-                    title: true,
-                    imagePath: true,
-                    ownerId: true
-                },
-                where: {
-                    ownerId: {
-                        not: currentUser
-                    }
-                },
-                orderBy: {
-                    createdAt: 'desc'
-                },
-                take: limite
-            })
-        } else {
-            auctions = await prisma.auction.findMany({
-                select: {
-                    id: true,
-                    title: true,
-                    imagePath: true,
-                    ownerId: true
-                },
-                where: {
-                    ownerId: {
-                        not: currentUser
-                    }
-                },
-                orderBy: {
-                    createdAt: 'desc'
-                }
-            })
+    public async getAuctions(params: QueryParamsAuction, currentUser: string): Promise<Auction[]> {
+        const { dataInicial, dataFinal, limite, category, myAuctions } = params;
+    
+        let where: Prisma.AuctionWhereInput = {};
+            
+        if (dataInicial && dataFinal && dataFinal >= dataInicial) {
+            where.createdAt = {
+                gte: dataInicial + 'T00:00:00.000Z',
+                lte: dataFinal + 'T23:59:59.999Z'
+            };
         }
 
-        return auctions
-    }
+        if (category) {
+            where.category = {
+                contains: category
+            };
+        }
+    
+        let auctions = await prisma.auction.findMany({
+            where,
+            take: limite ? Number(limite) : undefined,
+            include: {
+                Batch: true
+            }
+        });
 
-    public async getAuctionsByQuery(dataInicial: Date, dataFinal: Date, limite: number, currentUser: string): Promise<object> {        
-        let auctions
-        
-        if (limite !== -1) {
-            auctions = await prisma.auction.findMany({
-                select: {
-                    id: true,
-                    title: true,
-                    description: true,
-                    imagePath: true,
-                    ownerId: true
-                },
-                where: {
-                    ownerId: {
-                        not: currentUser
-                    },
-                    createdAt: {
-                        gte: dataInicial,
-                        lte: dataFinal 
-                    }
-                },
-                orderBy: {
-                    createdAt: 'asc'
-                },
-                take: limite
-            })
-        } else {
-            auctions = await prisma.auction.findMany({
-                select: {
-                    id: true,
-                    title: true,
-                    description: true,
-                    imagePath: true,
-                    ownerId: true
-                },
-                where: {
-                    ownerId: {
-                        not: currentUser
-                    },
-                    createdAt: {
-                        gte: dataInicial,
-                        lte: dataFinal
-                    }
-                },
-                orderBy: {
-                    createdAt: 'asc'
-                }
-            })
+        const isMyAuctions = myAuctions === 'true';
+    
+        if (isMyAuctions) {
+            auctions = auctions.filter(auction => auction.ownerId == currentUser);
         }
 
-        return auctions
-    }
-
-    public async getAuctionsByUser(currentUser: string, limite: number): Promise<object> {
-        let auctions
-        
-        if (limite !== -1) {
-            auctions = await prisma.auction.findMany({
-                where: {
-                    ownerId: currentUser
-                },
-                orderBy: {
-                    createdAt: 'desc'
-                },
-                take: limite,
-                include: {
-                    Batch: true
-                }                 
-            })
-        } else {
-            auctions = await prisma.auction.findMany({
-                where: {
-                    ownerId: currentUser
-                },
-                orderBy: {
-                    createdAt: 'desc'
-                },
-                include: {
-                    Batch: true
-                }
-            })
-        }
-
-        auctions = auctions.map(auction => ({
-            ...auction,
-            batchCount: auction.Batch.length
-        }));
-
-        const auctionsList = auctions.map(auction => ({
-            id: auction.id,
-            title: auction.title,
-            batchCount: auction.batchCount
-        }))
-
-        return auctionsList
+        return auctions;
     }
 
     public async getAuctionById(id: string): Promise<Auction | null> {
