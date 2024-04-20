@@ -60,13 +60,14 @@ model Batch {
 }
 
 model Inscription {
-  id        String   @id @default(uuid())
-  createdAt DateTime
-  updatedAt DateTime
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  batch     Batch    @relation(fields: [batchId], references: [id])
-  batchId   String
+  id           String   @id @default(uuid())
+  createdAt    DateTime
+  updatedAt    DateTime
+  confirmation Boolean  @default(false)
+  user         User     @relation(fields: [userId], references: [id])
+  userId       String
+  batch        Batch    @relation(fields: [batchId], references: [id])
+  batchId      String
 
   @@map("inscriptions")
 }

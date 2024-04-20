@@ -3,6 +3,8 @@ import { IAuctionRepository } from '../repositories/ports/AuctionRepositoryInter
 import { IBatchRepository } from '../repositories/ports/BatchRepositoryInterface'
 import { AuctionData, QueryParamsAuction } from '../types/auction'
 import { BatchData } from '../types/batch'
+import { batchStatusEnum } from '../types/batchStatus'
+import { verifyBatch } from '../utils/verifyBatch'
 
 export class AuctionUseCase {
   constructor(private readonly auctionRepository: IAuctionRepository, private readonly batchRepository: IBatchRepository) {}
@@ -37,12 +39,14 @@ export class AuctionUseCase {
             let batchsList: any[] = []
             let imagesPath: string[] = []
 
-            auction.Batch.forEach((batch: any) => {
+            auction.Batch.forEach( async (batch: any) => {
                 imagesPath.push(batch.imagePath1)
                 imagesPath.push(batch.imagePath2)
                 imagesPath.push(batch.imagePath3)
                 imagesPath.push(batch.imagePath4)
                 imagesPath.push(batch.imagePath5)
+
+                await verifyBatch(batch, this.batchRepository);
 
                 batchsList.push({
                     id: batch.id,
@@ -92,6 +96,8 @@ export class AuctionUseCase {
             imagesPath.push(batch.imagePath3)
             imagesPath.push(batch.imagePath4)
             imagesPath.push(batch.imagePath5)
+
+            await verifyBatch(batch, this.batchRepository);
 
             batchsList.push({
                 id: batch.id,

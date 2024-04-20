@@ -2,6 +2,8 @@ import { HTTPError } from "../errors/httpError";
 import { IBatchRepository } from "../repositories/ports/BatchRepositoryInterface";
 import { IAuctionRepository } from "../repositories/ports/AuctionRepositoryInterface";
 import { BatchData } from "../types/batch";
+import { batchStatusEnum } from "../types/batchStatus";
+import { verifyBatch } from "../utils/verifyBatch";
 
 export class BatchUseCase {
   constructor(private readonly batchRepository: IBatchRepository, private readonly auctionRepository: IAuctionRepository) {}
@@ -20,6 +22,15 @@ export class BatchUseCase {
     if (!batch) {
         throw new HTTPError(404, 'Lote não encontrado')
     }
+  
+    const inscription = await this.batchRepository.getInscriptionById(correntUser, batch.id)
+
+    let isConfirmation = false
+    if (inscription) {
+      isConfirmation = await this.batchRepository.alreadyConfimation(inscription.id)
+    }
+
+    await verifyBatch(batch, this.batchRepository);
 
     return {
         id: batch.id,
@@ -31,6 +42,7 @@ export class BatchUseCase {
         code: batch.code,
         status: batch.status,
         isEnrolled: await this.batchRepository.alreadyEnrolled(correntUser, batch.id),
+        isConfirmation: isConfirmation,
         images: [batch.imagePath1, batch.imagePath2, batch.imagePath3, batch.imagePath4, batch.imagePath5],
     }
   }
@@ -65,6 +77,26 @@ export class BatchUseCase {
 
   public async deleteBatch(id: string) {
     await this.batchRepository.deleteBatch(id)
+  }
+
+  public async confirmInscription(batchId: string, userId: string) {
+    const batch = await this.batchRepository.getBatchById(batchId)
+
+    if (!batch) {
+        throw new HTTPError(404, 'Lote não encontrado')
+    }
+
+    if (batch?.status !== batchStatusEnum.WAITING_FOR_PARTICIPANTS) {
+        throw new HTTPError(404, 'Lote não está aberto para confirmação de inscrição. Aguarde o período para confirmação de inscrição')
+    }
+
+    const inscription = await this.batchRepository.getInscriptionById(userId, batchId)
+
+    if (!inscription) {
+        throw new HTTPError(404, 'Inscrição não encontrada')
+    }
+
+    return await this.batchRepository.confirmInscription(inscription.id)
   }
 
   public async enrollUserInBatch(userId: string, batchId: string, auctionId: string) {

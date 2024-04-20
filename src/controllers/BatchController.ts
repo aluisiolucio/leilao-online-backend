@@ -103,4 +103,19 @@ export class BatchController {
         
         return await batch.enrollUserInBatch(userId, batchId, auctionId)
     }
+
+    public async confirmInscription(userId: string, requestBody: unknown) {
+        const confirmSchema = z.object({
+            batchId: z.string()
+        }).safeParse(requestBody)
+
+        if (!confirmSchema.success) {
+            schemaError(confirmSchema)
+        }
+
+        const { batchId } = confirmSchema.data
+
+        const batch = new BatchUseCase(this.batchRepository, this.auctionRepository)
+        return await batch.confirmInscription(batchId, userId)
+    }
 }

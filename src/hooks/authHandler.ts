@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken'
 
 export function authHandler(request: FastifyRequest, reply: FastifyReply, done: any) {
     try {
-        if (!request.url.includes('/signup') && !request.url.includes('/signin')) {
+        if (!request.url.includes('/signup') && !request.url.includes('/signin') && !request.url.includes('/bids')) {
             const { authorization } = request.headers
 
             if (!authorization) {
@@ -29,6 +29,30 @@ export function authHandler(request: FastifyRequest, reply: FastifyReply, done: 
         console.error('Erro ao executar o Hook (authHandler)', error)
 
         reply.status(500).send({ statusCode: 500, message: 'Erro interno no servidor' })
+    }
+
+    done()
+}
+
+export function authWSHandler(socket: any, done: any) {
+    try {
+        const authorizationHeader = socket.headers['authorization'];
+        const accessToken = authorizationHeader ? authorizationHeader.replace('Bearer ', '') : null;
+
+        if (!accessToken) {
+            return done(new Error('Token não informado'))
+        }
+
+        const decoded = jwt.verify(accessToken, process.env.JWT_SECRET as string)
+
+        if (!decoded) {
+            return done(new Error('Token inválido'))
+        }
+
+        socket.user = decoded
+    } catch (error) {
+        console.error('Erro ao executar o Hook (authWSHandler)', error)
+        done(new Error('Erro interno no servidor'))
     }
 
     done()

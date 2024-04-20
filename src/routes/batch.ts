@@ -59,3 +59,11 @@ export async function enrollUserInBatch(app: FastifyInstance) {
         return await controller.enrollUserInBatch(request.user.id, request.body)
     })
 }
+
+export async function confirmInscription(app: FastifyInstance) {
+    app.patch('/confirm', async (request, reply) => {
+        const controller = new BatchController()
+        
+        return await controller.confirmInscription(request.user.id, request.body)
+    })
+}

@@ -52,7 +52,28 @@ export class BatchRepository implements IBatchRepository {
                 }
             },
             include: {
-                auction: true
+                auction: true,
+            },
+            orderBy: {
+                startDateTime: 'desc'
+            }
+        })
+
+        return batchs
+    }
+
+    public async getBatchesWithRegistration(): Promise<object[]> {
+        const batchs = await prisma.batch.findMany({
+            select: {
+                id: true,
+                status: true,
+                price: true,
+                startDateTime: true
+            },
+            where: {
+                Inscription: {
+                    some: {}
+                }
             },
             orderBy: {
                 startDateTime: 'desc'
@@ -87,6 +108,37 @@ export class BatchRepository implements IBatchRepository {
         }
     }
 
+    public async changeStatus(id: string, status: string): Promise<void> {
+        try {
+            await prisma.batch.update({
+                where: {
+                    id
+                },
+                data: {
+                    status
+                }
+            })
+        } catch (error: any) {
+            if(error.code === 'P2025') {
+                throw new HTTPError(404, 'Lote não encontrado')
+            }
+
+            console.log(error)
+            throw new HTTPError(400, 'Erro ao atualizar status do lote')
+        }
+    }
+
+    public async hasParticipants(id: string): Promise<boolean> {
+        const inscription = await prisma.inscription.findFirst({
+            where: {
+                batchId: id,
+                confirmation: true
+            }
+        })
+
+        return !!inscription
+    }
+
     public async deleteBatch(id: string): Promise<void> {
         try {
             await prisma.batch.delete({
@@ -114,6 +166,28 @@ export class BatchRepository implements IBatchRepository {
         return !!batch
     }
 
+    public async confirmInscription(inscriptionId: string): Promise<InscriptionData> {
+        try {
+            const inscription = await prisma.inscription.update({
+                where: {
+                    id: inscriptionId
+                },
+                data: {
+                    confirmation: true
+                }
+            })
+
+            return inscription
+        } catch (error: any) {
+            if(error.code === 'P2025') {
+                throw new HTTPError(404, 'Inscrição não encontrada')
+            }
+
+            console.log(error)
+            throw new HTTPError(400, 'Erro ao confirmar inscrição')
+        }
+    }
+
     public async enrollUserInBatch(userId: string, batchId: string): Promise<InscriptionData> {
         const inscription = await prisma.inscription.create({
             data: {
@@ -127,6 +201,17 @@ export class BatchRepository implements IBatchRepository {
         return inscription       
     }
 
+    public async getInscriptionById(userId: string, batchId: string): Promise<InscriptionData | null> {
+        const inscription = await prisma.inscription.findFirst({
+            where: {
+                userId,
+                batchId
+            }
+        })
+     
+        return inscription
+    }
+
     public async alreadyEnrolled(userId: string, batchId: string): Promise<boolean> {
         const inscription = await prisma.inscription.findFirst({
             where: {
@@ -136,5 +221,15 @@ export class BatchRepository implements IBatchRepository {
         })
 
         return !!inscription
+    }
+
+    public async alreadyConfimation(inscriptionId: string): Promise<boolean> {
+        const inscription = await prisma.inscription.findUnique({
+            where: {
+                id: inscriptionId
+            }
+        })
+
+        return inscription?.confirmation || false
     }
 }
