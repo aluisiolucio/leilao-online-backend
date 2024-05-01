@@ -5,8 +5,10 @@ import { authWSHandler } from '../../hooks/authHandler';
 
 type Lance = {
     batchId: string;
-    user: string;
+    userName: string;
+    userId: string;
     value: number;
+    code: number;
     index: number;
 }
 
@@ -82,16 +84,9 @@ export async function bids(app: FastifyInstance) {
 
     setInterval(async () => {
         await checkAndOpenBatchs();
-    }, 60000); // 1 minuto
+    }, 60000);
 
     app.get('/:batchId/bids', { websocket: true }, async (socket, request) => {
-        // authWSHandler(socket, (error: any) => {
-        //     if (error) {
-        //         socket.send(JSON.stringify({ message: error.message }));
-        //         socket.close();
-        //     }
-        // });
-
         const { batchId } = request.params as any;
 
         const batchRepository = new BatchRepository();
@@ -104,63 +99,135 @@ export async function bids(app: FastifyInstance) {
         // Verificar se o lote está aberto para lances
         if (batchState[batchId] && batchState[batchId].isOpen) {
         // if (true) {
-            // Envie lances existentes para o cliente recém-conectado
+            // Enviar lances anteriores para o cliente
             if (bidsByBatchId[batchId]) {
-                socket.send(JSON.stringify({ data: bidsByBatchId[batchId] }));
+                bidsByBatchId[batchId].forEach((lance: Lance) => {
+                    socket.send(JSON.stringify({ type: 'bid', ...lance }));
+                });
             }
+            
+            // Avise a todos os cleintes conectados que o tempo restante para dar lances está finalizando, quando faltar 1 minuto
+            // const currentDateTime = new Date();
+            // currentDateTime.setHours(currentDateTime.getHours() - 3);
+            // const openingTimeOrignal = new Date(batch?.startDateTime || ''); // Início do lote
+            // const timeToBids = new Date(openingTimeOrignal.getTime() + 600000); // 10 minutos após o início do lote
+
+            // // diferença entre currentDateTime e timeToBids quando faltar 1 minuto
+            // const difference = timeToBids.getTime() - currentDateTime.getTime();
+
+            // if (difference <= 60000 && difference > 0) {
+            //     app.websocketServer.clients.forEach((client: any) => {
+            //         if (client.batchId === batchId && client.readyState === 1) {
+            //             client.send(JSON.stringify({ type: 'info', message: 'Faltam 1 minuto para o fim dos lances' }));
+            //         }
+            //     });
+            // }
 
             socket.on('message', async (message: string) => {
                 if (batchState[batchId] && !batchState[batchId].isOpen) {
-                    socket.send(JSON.stringify({ message: 'Lote fechado para lances' }));
+                    socket.send(JSON.stringify({ type: 'error', message: 'Lote fechado para lances' }));
                     return;
                 }
                 
                 try {
                     const data = JSON.parse(message);
-                    
-                    if (lastValue[batchId] == 0) {
-                        lastValue[batchId] = initialValue;
-                    }
 
-                    if (data.value <= lastValue[batchId]) {
-                        socket.send(JSON.stringify({ message: 'Lance inválido! Informe um valor superior ao último lance' }));
-                        return;
-                    }
+                    // Checar se é uma mensagem de autenticação
+                    if (data.type === 'authentication') {
+                        const userData = authWSHandler(data.token || '', (error: any) => {
+                            if (error) {
+                                socket.send(JSON.stringify({ type: 'error', message: error.message }));
+                                socket.close();
+                            }
+                        });
 
-                    lastValue[batchId] = data.value;
-
-                    // Processar o lance recebido
-                    const lance: Lance = {
-                        batchId: batchId,
-                        // user: socket.user.name,
-                        user: 'Usuário',
-                        value: lastValue[batchId],
-                        index: bidsByBatchId[batchId] ? bidsByBatchId[batchId].length : 0
-                    }
-
-                    // Adicionar o lance à lista de lances para este lote
-                    if (!bidsByBatchId[batchId]) {
-                        bidsByBatchId[batchId] = [];
-                    }
-
-                    bidsByBatchId[batchId].push(lance);
-
-                    // Enviar o lance para todos os clientes conectados interessados neste lote
-                    app.websocketServer.clients.forEach((client: any) => {
-                        if (client.batchId === batchId && client.readyState === 1) {
-                            client.send(JSON.stringify(lance));
+                        if (!userData) {
+                            socket.send(JSON.stringify({ type: 'error', message: 'Autenticação falha' }));
+                            socket.close();
+                            return;
                         }
-                    });
+                        socket.user = userData;
+                    }
+
+                    // Continuar com a lógica de lances
+                    if (data.type === 'bid') {
+                        // Certifique-se de que a conexão está autenticada
+                        if (!socket.user) {
+                            socket.send(JSON.stringify({ type: 'error', message: 'Usuário não autenticado' }));
+                            return;
+                        }
+                        // Lógica de processamento de lance aqui...
+                        if (lastValue[batchId] == 0) {
+                            lastValue[batchId] = initialValue;
+                        }
+    
+                        if (data.value <= lastValue[batchId]) {
+                            socket.send(JSON.stringify({ type: 'error', message: 'Lance inválido! Informe um valor superior ao último lance' }));
+                            return;
+                        }
+    
+                        lastValue[batchId] = data.value;
+    
+                        // Processar o lance recebido
+                        const lance: Lance = {
+                            batchId: batchId,
+                            userName: socket.user.name,
+                            userId: socket.user.id,
+                            value: lastValue[batchId],
+                            code: batch?.code || 0,
+                            index: bidsByBatchId[batchId] ? bidsByBatchId[batchId].length : 0
+                        }
+    
+                        // Adicionar o lance à lista de lances para este lote
+                        if (!bidsByBatchId[batchId]) {
+                            bidsByBatchId[batchId] = [];
+                        }
+    
+                        bidsByBatchId[batchId].push(lance);
+    
+                        // Enviar o lance para todos os clientes conectados interessados neste lote
+                        app.websocketServer.clients.forEach((client: any) => {
+                            if (client.batchId === batchId && client.readyState === 1) {
+                                const lanceSend = {
+                                    type: 'bid',
+                                    ...lance
+                                }
+
+                                client.send(JSON.stringify(lanceSend));
+                            }
+                        });
+                    }
+                    
                 } catch (error) {
                     console.error('Erro ao processar mensagem WebSocket:', error);
                 }
             });
         } else {
             // Informar ao cliente que o lote está fechado para lances
-            socket.send(JSON.stringify({ message: 'Lote fechado para lances' }));
+            socket.send(JSON.stringify({ type: 'error', message: 'Lote fechado para lances' }));
         }
 
         socket.on('close', () => {
+            const currentDateTime = new Date();
+            currentDateTime.setHours(currentDateTime.getHours() - 3);
+            const openingTimeOrignal = new Date(batch?.startDateTime || ''); // Início do lote
+            const timeToBids = new Date(openingTimeOrignal.getTime() + 600000); // 10 minutos após o início do lote
+
+            // Quando o tempo para dar lances acabar, avisar a todos os clientes conectados o vencedor do lote
+            if (currentDateTime >= timeToBids) {
+                batchState[batchId].isOpen = false;
+
+                const winner = bidsByBatchId[batchId].reduce((prev: any, current: any) => (prev.value > current.value) ? prev : current);
+
+                app.websocketServer.clients.forEach((client: any) => {
+                    if (client.batchId === batchId && client.readyState === 1) {
+                        client.send(JSON.stringify({ type: 'info', message: `Lote fechado! Vencedor: ${winner.userName} - R$ ${winner.value.toFixed(2)}` }));
+                    }
+                });
+
+                // // Salvar o vencedor no banco de dados
+                // await batchRepository.saveWinner(batchId, winner.userId, winner.value);
+            }
             // Remover a conexão WebSocket quando desconectada
             delete socket.batchId;
         });

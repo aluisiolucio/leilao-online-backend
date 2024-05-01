@@ -34,9 +34,9 @@ export function authHandler(request: FastifyRequest, reply: FastifyReply, done: 
     done()
 }
 
-export function authWSHandler(socket: any, done: any) {
+export function authWSHandler(token: string, done: any) {
     try {
-        const authorizationHeader = socket.headers['authorization'];
+        const authorizationHeader = token;
         const accessToken = authorizationHeader ? authorizationHeader.replace('Bearer ', '') : null;
 
         if (!accessToken) {
@@ -49,7 +49,10 @@ export function authWSHandler(socket: any, done: any) {
             return done(new Error('Token inválido'))
         }
 
-        socket.user = decoded
+        return {
+            name: decoded.name,
+            id: decoded.id
+        }
     } catch (error) {
         console.error('Erro ao executar o Hook (authWSHandler)', error)
         done(new Error('Erro interno no servidor'))

@@ -16,14 +16,14 @@ export class BatchUseCase {
     }
   }
 
-  public async getBatchById(id: string, correntUser: string) {
+  public async getBatchById(id: string, currentUser: string) {
     const batch = await this.batchRepository.getBatchById(id)
 
     if (!batch) {
         throw new HTTPError(404, 'Lote não encontrado')
     }
   
-    const inscription = await this.batchRepository.getInscriptionById(correntUser, batch.id)
+    const inscription = await this.batchRepository.getInscriptionById(currentUser, batch.id)
 
     let isConfirmation = false
     if (inscription) {
@@ -41,7 +41,7 @@ export class BatchUseCase {
         specification: batch.specification,
         code: batch.code,
         status: batch.status,
-        isEnrolled: await this.batchRepository.alreadyEnrolled(correntUser, batch.id),
+        isEnrolled: await this.batchRepository.alreadyEnrolled(currentUser, batch.id),
         isConfirmation: isConfirmation,
         images: [batch.imagePath1, batch.imagePath2, batch.imagePath3, batch.imagePath4, batch.imagePath5],
     }
