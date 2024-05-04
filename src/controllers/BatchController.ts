@@ -23,21 +23,17 @@ export class BatchController {
             code: z.number(),
             startDateTime: z.string(),
             specification: z.string(),
-            images: z.array(z.string()),
-            contact: z.object({
-                name: z.string(),
-                phone: z.string()
-            })
+            imagesPath: z.array(z.string()).length(5)
         }).safeParse(requestBody)
 
         if (!bacthSchema.success) {
             schemaError(bacthSchema)
+        } else {
+            const batchData = bacthSchema.data as unknown as BatchData
+    
+            const batch = new BatchUseCase(this.batchRepository, this.auctionRepository)
+            return await batch.createBatch(batchData)
         }
-
-        const batchData = bacthSchema.data as BatchData
-
-        const batch = new BatchUseCase(this.batchRepository, this.auctionRepository)
-        return await batch.createBatch(batchData)
     }
 
     public async getBatchById(id: string, currentUser: string) {
@@ -66,20 +62,20 @@ export class BatchController {
 
         if (!bacthSchema.success) {
             schemaError(bacthSchema)
+        } else {
+            if (!bacthSchema.data.title && 
+                !bacthSchema.data.price && 
+                !bacthSchema.data.startDateTime && 
+                !bacthSchema.data.specification && 
+                !bacthSchema.data.contact) {
+                throw new HTTPError(400, 'É necessário informar ao menos um campo para atualização')
+            }
+    
+            const batchData = bacthSchema.data as unknown as BatchData
+    
+            const batch = new BatchUseCase(this.batchRepository, this.auctionRepository)
+            return await batch.updateBatch(id, batchData)
         }
-
-        if (!bacthSchema.data.title && 
-            !bacthSchema.data.price && 
-            !bacthSchema.data.startDateTime && 
-            !bacthSchema.data.especification && 
-            !bacthSchema.data.contact) {
-            throw new HTTPError(400, 'É necessário informar ao menos um campo para atualização')
-        }
-
-        const batchData = bacthSchema.data as BatchData
-
-        const batch = new BatchUseCase(this.batchRepository, this.auctionRepository)
-        return await batch.updateBatch(id, batchData)
     }
 
     public async deleteBatch(id: string) {
@@ -96,12 +92,12 @@ export class BatchController {
 
         if (!enrollSchema.success) {
             schemaError(enrollSchema)
+        } else {
+            const { batchId, auctionId } = enrollSchema.data
+            const batch = new BatchUseCase(this.batchRepository, this.auctionRepository)
+            
+            return await batch.enrollUserInBatch(userId, batchId, auctionId)
         }
-
-        const { batchId, auctionId } = enrollSchema.data
-        const batch = new BatchUseCase(this.batchRepository, this.auctionRepository)
-        
-        return await batch.enrollUserInBatch(userId, batchId, auctionId)
     }
 
     public async confirmInscription(userId: string, requestBody: unknown) {
@@ -111,11 +107,11 @@ export class BatchController {
 
         if (!confirmSchema.success) {
             schemaError(confirmSchema)
+        } else {
+            const { batchId } = confirmSchema.data
+    
+            const batch = new BatchUseCase(this.batchRepository, this.auctionRepository)
+            return await batch.confirmInscription(batchId, userId)
         }
-
-        const { batchId } = confirmSchema.data
-
-        const batch = new BatchUseCase(this.batchRepository, this.auctionRepository)
-        return await batch.confirmInscription(batchId, userId)
     }
 }

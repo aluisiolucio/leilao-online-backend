@@ -5,7 +5,7 @@ import { InscriptionData } from "../../types/inscription"
 export interface IBatchRepository {
     createBatch(data: BatchData): Promise<Batch>
     getBatchById(id: string): Promise<Batch | null>
-    getEnrolledBatchs(currentUser: string): Promise<Batch[]>
+    getEnrolledBatchs(currentUser: string): Promise<any>
     getBatchesWithRegistration(): Promise<object[]>
     updateBatch(id: string, data: BatchData): Promise<Batch>
     changeStatus(id: string, status: string): Promise<void>

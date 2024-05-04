@@ -3,7 +3,6 @@ import { IAuctionRepository } from '../repositories/ports/AuctionRepositoryInter
 import { IBatchRepository } from '../repositories/ports/BatchRepositoryInterface'
 import { AuctionData, QueryParamsAuction } from '../types/auction'
 import { BatchData } from '../types/batch'
-import { batchStatusEnum } from '../types/batchStatus'
 import { verifyBatch } from '../utils/verifyBatch'
 
 export class AuctionUseCase {
@@ -35,7 +34,7 @@ export class AuctionUseCase {
         const auctions = await this.auctionRepository.getAuctions(params, currentUser)
 
         let auctionsList: any[] = []
-        auctions.forEach((auction) => {
+        auctions.forEach((auction: any) => {
             let batchsList: any[] = []
             let imagesPath: string[] = []
 

@@ -37,12 +37,12 @@ export class AuctionController {
 
         if (!createAuctionSchema.success) {
             schemaError(createAuctionSchema)
+        } else {
+            const auctionData = createAuctionSchema.data as unknown as AuctionData
+    
+            const auctionUseCase = new AuctionUseCase(this.auctionRepository, this.batchRepository)
+            return await auctionUseCase.createAuction(auctionData, currentUser)
         }
-
-        const auctionData = createAuctionSchema.data as AuctionData
-
-        const auctionUseCase = new AuctionUseCase(this.auctionRepository, this.batchRepository)
-        return await auctionUseCase.createAuction(auctionData, currentUser)
     }
 
     public async getAuctions(params: QueryParamsAuction, currentUser: string) {
@@ -63,16 +63,16 @@ export class AuctionController {
 
         if (!updateAuctionSchema.success) {
             schemaError(updateAuctionSchema)
+        } else {
+            const { title, description } = updateAuctionSchema.data
+    
+            if (!title && !description) {
+                throw new HTTPError(400, 'É necessário informar ao menos um campo para atualização')
+            }
+
+            const auctionUseCase = new AuctionUseCase(this.auctionRepository, this.batchRepository)
+            return await auctionUseCase.updateAuction(id, title || '', description || '')
         }
-
-        const { title, description } = updateAuctionSchema.data
-
-        if (!title && !description) {
-            throw new HTTPError(400, 'É necessário informar ao menos um campo para atualização')
-        }
-
-        const auctionUseCase = new AuctionUseCase(this.auctionRepository, this.batchRepository)
-        return await auctionUseCase.updateAuction(id, title, description)
     }
 
     public async deleteAuction(id: string) {

@@ -1,5 +1,5 @@
 export type BatchData = {
-    auctionId: string | null;
+    auctionId?: string | null;
     title: string;
     price: number;
     code: number;

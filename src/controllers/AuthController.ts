@@ -20,11 +20,11 @@ export class AuthController {
 
         if (!createUserSchema.success) {
             schemaError(createUserSchema)
+        } else {
+            const { name, email, password } = createUserSchema.data
+            const authUseCase = new AuthUseCase(this.authRepository)
+            return await authUseCase.createUser(name, email, password)
         }
-
-        const { name, email, password } = createUserSchema.data
-        const authUseCase = new AuthUseCase(this.authRepository)
-        return await authUseCase.createUser(name, email, password)
     }
 
     public async signIn(requestBody: unknown) {

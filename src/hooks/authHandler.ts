@@ -1,6 +1,10 @@
 import { FastifyRequest, FastifyReply } from 'fastify'
 import jwt from 'jsonwebtoken'
 
+interface CustomRequest extends FastifyRequest {
+    user: unknown
+}
+
 export function authHandler(request: FastifyRequest, reply: FastifyReply, done: any) {
     try {
         if (!request.url.includes('/signup') && !request.url.includes('/signin') && !request.url.includes('/bids')) {
@@ -18,7 +22,7 @@ export function authHandler(request: FastifyRequest, reply: FastifyReply, done: 
                 return reply.status(401).send({ statusCode: 401, message: 'Token inválido' })
             }
 
-            request.user = decoded
+            (request as CustomRequest).user = decoded
         }
     } catch (error) {
 
@@ -49,10 +53,7 @@ export function authWSHandler(token: string, done: any) {
             return done(new Error('Token inválido'))
         }
 
-        return {
-            name: decoded.name,
-            id: decoded.id
-        }
+        return decoded
     } catch (error) {
         console.error('Erro ao executar o Hook (authWSHandler)', error)
         done(new Error('Erro interno no servidor'))

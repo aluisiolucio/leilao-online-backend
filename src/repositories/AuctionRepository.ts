@@ -24,7 +24,7 @@ export class AuctionRepository implements IAuctionRepository {
         return auction
     }
 
-    public async getAuctions(params: QueryParamsAuction, currentUser: string): Promise<Auction[]> {
+    public async getAuctions(params: QueryParamsAuction, currentUser: string): Promise<any> {
         const { dataInicial, dataFinal, limite, category, myAuctions } = params;
     
         let where: Prisma.AuctionWhereInput = {};
@@ -64,7 +64,7 @@ export class AuctionRepository implements IAuctionRepository {
         return auctions;
     }
 
-    public async getAuctionById(id: string): Promise<Auction | null> {
+    public async getAuctionById(id: string): Promise<any> {
         const auction = await prisma.auction.findUnique({
             where: {
                 id

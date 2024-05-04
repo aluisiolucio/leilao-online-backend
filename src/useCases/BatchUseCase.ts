@@ -51,7 +51,7 @@ export class BatchUseCase {
     const batchs = await this.batchRepository.getEnrolledBatchs(currentUser)
 
     let enrolledBatchs: any = []
-    batchs.map(batch => {
+    batchs.map((batch: any) => {
         enrolledBatchs.push({
             id: batch.id,
             auctionId: batch.auctionId,

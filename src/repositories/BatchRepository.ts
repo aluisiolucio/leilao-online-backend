@@ -42,7 +42,7 @@ export class BatchRepository implements IBatchRepository {
         return batch
     }
 
-    public async getEnrolledBatchs(currentUser: string): Promise<Batch[]> {
+    public async getEnrolledBatchs(currentUser: string): Promise<any> {
         const batchs = await prisma.batch.findMany({
             where: {
                 Inscription: {
