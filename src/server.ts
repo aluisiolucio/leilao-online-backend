@@ -19,28 +19,28 @@ app.register(cors, {
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
 })
 
-app.register(websocket)
+// app.register(websocket)
 
-app.register(signUp, { prefix: '/api/auth' })
-app.register(signIn, { prefix: '/api/auth' })
+// app.register(signUp, { prefix: '/api/auth' })
+// app.register(signIn, { prefix: '/api/auth' })
 
-app.register(postAuction, { prefix: '/api/auction' })
-app.register(getAuction, { prefix: '/api/auction' })
-app.register(getAuctionById, { prefix: '/api/auction' })
-app.register(updateAuction, { prefix: '/api/auction' })
-app.register(deleteAuction, { prefix: '/api/auction' })
+// app.register(postAuction, { prefix: '/api/auction' })
+// app.register(getAuction, { prefix: '/api/auction' })
+// app.register(getAuctionById, { prefix: '/api/auction' })
+// app.register(updateAuction, { prefix: '/api/auction' })
+// app.register(deleteAuction, { prefix: '/api/auction' })
 
-app.register(postBatch, { prefix: '/api/batch' })
-app.register(getBatchById, { prefix: '/api/batch' })
-app.register(putBatch, { prefix: '/api/batch' })
-app.register(deleteBatch, { prefix: '/api/batch' })
-app.register(enrollUserInBatch, { prefix: '/api/batch' })
-app.register(getEnrolledBatchs, { prefix: '/api/batch' })
-app.register(confirmInscription, { prefix: '/api/batch' })
+// app.register(postBatch, { prefix: '/api/batch' })
+// app.register(getBatchById, { prefix: '/api/batch' })
+// app.register(putBatch, { prefix: '/api/batch' })
+// app.register(deleteBatch, { prefix: '/api/batch' })
+// app.register(enrollUserInBatch, { prefix: '/api/batch' })
+// app.register(getEnrolledBatchs, { prefix: '/api/batch' })
+// app.register(confirmInscription, { prefix: '/api/batch' })
 
-app.register(bids, { prefix: '/api/batch' })
+// app.register(bids, { prefix: '/api/batch' })
 
-app.addHook('preHandler', authHandler)
+// app.addHook('preHandler', authHandler)
 
 app.setErrorHandler((error: HTTPError, request, reply) => {
   if (error.statusCode >= 400 && error.statusCode < 500) {

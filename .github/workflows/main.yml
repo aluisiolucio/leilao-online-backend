@@ -20,33 +20,33 @@ jobs:
     
     - name: Install Node.js
       run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@3.210.199.156 '
+        ssh -o StrictHostKeyChecking=no ubuntu@3.80.134.104 '
           curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - &&
           sudo apt-get install -y nodejs
         '
 
     - name: Copy application to EC2
       run: |
-        rsync -avz --exclude node_modules/ --exclude .git/ -e "ssh -o StrictHostKeyChecking=no" ./ ubuntu@3.210.199.156:/home/ubuntu/nodeapp/
+        rsync -avz --exclude node_modules/ --exclude .git/ -e "ssh -o StrictHostKeyChecking=no" ./ ubuntu@3.80.134.104:/home/ubuntu/nodeapp/
 
     - name: Install dependencies and build TypeScript
       run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@3.210.199.156 '
+        ssh -o StrictHostKeyChecking=no ubuntu@3.80.134.104 '
           cd /home/ubuntu/nodeapp &&
           npm install &&
           npm run build
         '
 
-    - name: Configure environment variables
+    - name: Set environment variables
       run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@3.210.199.156 '
-          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > /home/ubuntu/nodeapp/.env &&
-          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> /home/ubuntu/nodeapp/.env
+        ssh -o StrictHostKeyChecking=no ubuntu@3.80.134.104 '
+          echo "export DATABASE_URL=${{ secrets.DATABASE_URL }}" &&
+          echo "export JWT_SECRET=${{ secrets.JWT_SECRET }}"
         '
 
     - name: Start the application using Node
       run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@3.210.199.156 '
+        ssh -o StrictHostKeyChecking=no ubuntu@3.80.134.104 '
           cd /home/ubuntu/nodeapp &&
           nohup node dist/server.js > app.log 2>&1 &
         '
