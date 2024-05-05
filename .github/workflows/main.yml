@@ -1,0 +1,40 @@
+name: Deploy Node.js API to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    
+    - name: Set up SSH key
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    
+    - name: Build Docker image
+      run: |
+        docker build -t nodeapp .
+    
+    - name: Save Docker image
+      run: |
+        docker save nodeapp | gzip > nodeapp.tar.gz
+    
+    - name: Copy Docker image to EC2
+      run: |
+        scp -o StrictHostKeyChecking=no nodeapp.tar.gz ubuntu@3.237.93.95:/home/ubuntu
+    
+    - name: Deploy to EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no ubuntu@3.237.93.95 '
+          docker load < nodeapp.tar.gz &&
+          docker stop nodeapp || true &&
+          docker rm nodeapp || true &&
+          docker run -d --name nodeapp -p 80:3333 nodeapp
+        '
