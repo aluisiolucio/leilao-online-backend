@@ -18,25 +18,36 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     
-    - name: Build Docker image
-      run: |
-        sudo docker build -t nodeapp .
-    
-    - name: Save Docker image
-      run: |
-        sudo docker save nodeapp | gzip > nodeapp.tar.gz
-    
-    - name: Copy Docker image to EC2
-      run: |
-        scp -o StrictHostKeyChecking=no nodeapp.tar.gz ubuntu@3.210.199.156:/home/ubuntu
-    
-    - name: Deploy to EC2
+    - name: Install Node.js
       run: |
         ssh -o StrictHostKeyChecking=no ubuntu@3.210.199.156 '
-          if [ $(sudo docker ps -aq -f name=nodeapp | wc -l) -gt 0 ]; then
-            sudo docker stop nodeapp &&
-            sudo docker rm nodeapp
-          fi;
-          sudo docker load < nodeapp.tar.gz &&
-          sudo docker run -d --name leilao-api -p 8000:3333 -e DATABASE_URL="${{ secrets.DATABASE_URL }}" -e JWT_SECRET="${{ secrets.JWT_SECRET }}" nodeapp
+          curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - &&
+          sudo apt-get install -y nodejs
+        '
+
+    - name: Copy application to EC2
+      run: |
+        rsync -avz --exclude node_modules/ --exclude .git/ -e "ssh -o StrictHostKeyChecking=no" ./ ubuntu@3.210.199.156:/home/ubuntu/nodeapp/
+
+    - name: Install dependencies and build TypeScript
+      run: |
+        ssh -o StrictHostKeyChecking=no ubuntu@3.210.199.156 '
+          cd /home/ubuntu/nodeapp &&
+          npm install &&
+          npm install typescript -g &&
+          tsc
+        '
+
+    - name: Configure environment variables
+      run: |
+        ssh -o StrictHostKeyChecking=no ubuntu@3.210.199.156 '
+          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > /home/ubuntu/nodeapp/.env &&
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> /home/ubuntu/nodeapp/.env
+        '
+
+    - name: Start the application
+      run: |
+        ssh -o StrictHostKeyChecking=no ubuntu@3.210.199.156 '
+          cd /home/ubuntu/nodeapp &&
+          pm2 start dist/server.js --name "nodeapp"
         '
