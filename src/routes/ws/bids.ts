@@ -18,7 +18,7 @@ const waitForConfirmation: Record<string, { isConfirmed: boolean }> = {};
 const lastValue: Record<string, number> = { '': 0 };
 
 async function checkAndOpenBatchs() {
-    console.log('Verificando lotes para abrir...');
+    // console.log('Verificando lotes para abrir...');
     const batchRepository = new BatchRepository();
     const batchesWithRegistration = await batchRepository.getBatchesWithRegistration();
 
@@ -72,10 +72,10 @@ async function checkAndOpenBatchs() {
             batchState[id].isOpen = false;
         }
 
-        console.log('Lote verificado:', id);
+        // console.log('Lote verificado:', id);
     });
     
-    console.log('Verificação de lotes concluída.');
+    // console.log('Verificação de lotes concluída.');
 }
 
 

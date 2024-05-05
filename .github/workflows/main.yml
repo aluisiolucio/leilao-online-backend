@@ -28,15 +28,15 @@ jobs:
     
     - name: Copy Docker image to EC2
       run: |
-        scp -o StrictHostKeyChecking=no nodeapp.tar.gz ubuntu@3.237.93.95:/home/ubuntu
+        scp -o StrictHostKeyChecking=no nodeapp.tar.gz ubuntu@34.200.214.128:/home/ubuntu
     
     - name: Deploy to EC2
       run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@3.237.93.95 '
+        ssh -o StrictHostKeyChecking=no ubuntu@34.200.214.128 '
           if [ $(sudo docker ps -aq -f name=nodeapp | wc -l) -gt 0 ]; then
             sudo docker stop nodeapp &&
             sudo docker rm nodeapp
           fi;
           sudo docker load < nodeapp.tar.gz &&
-          sudo docker run -d --name nodeapp -p 3333:3333 -e DATABASE_URL="${{ secrets.DATABASE_URL }}" -e JWT_SECRET="${{ secrets.JWT_SECRET }}" nodeapp
+          sudo docker run -d --name nodeapp -p 80:3333 -e DATABASE_URL="${{ secrets.DATABASE_URL }}" -e JWT_SECRET="${{ secrets.JWT_SECRET }}" nodeapp
         '
