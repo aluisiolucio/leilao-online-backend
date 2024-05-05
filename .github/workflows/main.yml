@@ -20,11 +20,11 @@ jobs:
     
     - name: Build Docker image
       run: |
-        docker build -t nodeapp .
+        sudo docker build -t nodeapp .
     
     - name: Save Docker image
       run: |
-        docker save nodeapp | gzip > nodeapp.tar.gz
+        sudo docker save nodeapp | gzip > nodeapp.tar.gz
     
     - name: Copy Docker image to EC2
       run: |
@@ -33,8 +33,8 @@ jobs:
     - name: Deploy to EC2
       run: |
         ssh -o StrictHostKeyChecking=no ubuntu@3.237.93.95 '
-          docker load < nodeapp.tar.gz &&
-          docker stop nodeapp || true &&
-          docker rm nodeapp || true &&
-          docker run -d --name nodeapp -p 80:3333 nodeapp
+          sudo docker load < nodeapp.tar.gz &&
+          sudo docker stop nodeapp || true &&
+          sudo docker rm nodeapp || true &&
+          sudo docker run -d --name nodeapp -p 80:3333 nodeapp
         '
