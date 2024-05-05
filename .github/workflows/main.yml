@@ -29,11 +29,12 @@ jobs:
       run: |
         rsync -avz --exclude node_modules/ --exclude .git/ -e "ssh -o StrictHostKeyChecking=no" ./ ubuntu@3.210.199.156:/home/ubuntu/nodeapp/
 
-    - name: Install dependencies and build TypeScript
+    - name: Install dependencies, TypeScript and PM2
       run: |
         ssh -o StrictHostKeyChecking=no ubuntu@3.210.199.156 '
           cd /home/ubuntu/nodeapp &&
           npm install &&
+          npm install pm2@latest -g
           npm run build
         '
 
@@ -49,4 +50,5 @@ jobs:
         ssh -o StrictHostKeyChecking=no ubuntu@3.210.199.156 '
           cd /home/ubuntu/nodeapp &&
           pm2 start dist/server.js --name "nodeapp"
+          pm2 save
         '
