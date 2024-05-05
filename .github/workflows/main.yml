@@ -34,8 +34,7 @@ jobs:
         ssh -o StrictHostKeyChecking=no ubuntu@3.210.199.156 '
           cd /home/ubuntu/nodeapp &&
           npm install &&
-          npm install typescript -g &&
-          tsc
+          npm run build
         '
 
     - name: Configure environment variables
