@@ -38,5 +38,5 @@ jobs:
             sudo docker rm nodeapp
           fi;
           sudo docker load < nodeapp.tar.gz &&
-          sudo docker run -d --name nodeapp -p 80:3333 nodeapp
+          sudo docker run -d --name nodeapp -p 80:3333 -e DATABASE_URL="${{ secrets.DATABASE_URL }}" -e JWT_SECRET="${{ secrets.JWT_SECRET }}" nodeapp
         '
