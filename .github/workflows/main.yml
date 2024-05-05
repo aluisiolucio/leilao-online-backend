@@ -33,8 +33,10 @@ jobs:
     - name: Deploy to EC2
       run: |
         ssh -o StrictHostKeyChecking=no ubuntu@3.237.93.95 '
+          if [ $(sudo docker ps -aq -f name=nodeapp | wc -l) -gt 0 ]; then
+            sudo docker stop nodeapp &&
+            sudo docker rm nodeapp
+          fi;
           sudo docker load < nodeapp.tar.gz &&
-          sudo docker stop nodeapp || true &&
-          sudo docker rm nodeapp || true &&
           sudo docker run -d --name nodeapp -p 80:3333 nodeapp
         '
