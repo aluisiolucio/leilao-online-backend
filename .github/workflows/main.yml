@@ -1,3 +1,4 @@
+
 name: Deploy Node.js API to AWS EC2
 
 on:
@@ -18,35 +19,25 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     
-    - name: Install Node.js
+    - name: Build Docker image
       run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@3.80.134.104 '
-          curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - &&
-          sudo apt-get install -y nodejs
-        '
-
-    - name: Copy application to EC2
+        sudo docker build -t nodeapp .
+    
+    - name: Save Docker image
       run: |
-        rsync -avz --exclude node_modules/ --exclude .git/ -e "ssh -o StrictHostKeyChecking=no" ./ ubuntu@3.80.134.104:/home/ubuntu/nodeapp/
-
-    - name: Install dependencies and build TypeScript
+        sudo docker save nodeapp | gzip > nodeapp.tar.gz
+    
+    - name: Copy Docker image to EC2
       run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@3.80.134.104 '
-          cd /home/ubuntu/nodeapp &&
-          npm install &&
-          npm run build
-        '
-
-    - name: Set environment variables
+        scp -o StrictHostKeyChecking=no nodeapp.tar.gz ubuntu@3.238.67.143:/home/ubuntu
+    
+    - name: Deploy to EC2
       run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@3.80.134.104 '
-          echo "export DATABASE_URL=${{ secrets.DATABASE_URL }}" &&
-          echo "export JWT_SECRET=${{ secrets.JWT_SECRET }}"
-        '
-
-    - name: Start the application using Node
-      run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@3.80.134.104 '
-          cd /home/ubuntu/nodeapp &&
-          nohup node dist/server.js > app.log 2>&1 &
+        ssh -o StrictHostKeyChecking=no ubuntu@3.238.67.143 '
+          if [ $(sudo docker ps -aq -f name=nodeapp | wc -l) -gt 0 ]; then
+            sudo docker stop nodeapp &&
+            sudo docker rm nodeapp
+          fi;
+          sudo docker load < nodeapp.tar.gz &&
+          sudo docker run -d --name leilao-api -p 3000:3000 -e DATABASE_URL="${{ secrets.DATABASE_URL }}" -e JWT_SECRET="${{ secrets.JWT_SECRET }}" nodeapp
         '
