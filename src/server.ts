@@ -51,6 +51,6 @@ app.setErrorHandler((error: HTTPError, request, reply) => {
   reply.status(500).send({ statusCode: 500, message: 'Erro Interno no Servidor' })
 })
 
-app.listen({ port: 3000 }).then(() => {
+app.listen({ port: 3000, host: '0.0.0.0' }).then(() => {
   console.log("HTTP server running on port 3000...")
 })
