@@ -18,37 +18,25 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
     
-    - name: Install Node.js if not already installed
+    - name: Build Docker image
+      run: |
+        sudo docker build -t nodeapp .
+    
+    - name: Save Docker image
+      run: |
+        sudo docker save nodeapp | gzip > nodeapp.tar.gz
+    
+    - name: Copy Docker image to EC2
+      run: |
+        scp -o StrictHostKeyChecking=no nodeapp.tar.gz ubuntu@3.239.191.235:/home/ubuntu
+    
+    - name: Deploy to EC2
       run: |
         ssh -o StrictHostKeyChecking=no ubuntu@3.239.191.235 '
-          if ! command -v node >/dev/null; then
-            curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - &&
-            sudo apt-get install -y nodejs
-          fi
-        '
-    
-    - name: Copy application to EC2
-      run: |
-        rsync -avz --exclude node_modules/ --exclude .git/ -e "ssh -o StrictHostKeyChecking=no" ./ ubuntu@3.239.191.235:/home/ubuntu/nodeapp/
-    
-    - name: Install dependencies and build TypeScript
-      run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@3.239.191.235 '
-          cd /home/ubuntu/nodeapp &&
-          npm install &&
-          npm run build
-        '
-    
-    - name: Set persistent environment variables
-      run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@3.239.191.235 '
-          echo "export DATABASE_URL=${{ secrets.DATABASE_URL }}" >> ~/.profile &&
-          echo "export JWT_SECRET=${{ secrets.JWT_SECRET }}" >> ~/.profile
-        '
-    
-    - name: Start the application
-      run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@3.239.191.235 '
-          cd /home/ubuntu/nodeapp &&
-          nohup node dist/server.js > app.log 2>&1 &
+          if [ $(sudo docker ps -aq -f name=nodeapp | wc -l) -gt 0 ]; then
+            sudo docker stop nodeapp &&
+            sudo docker rm nodeapp
+          fi;
+          sudo docker load < nodeapp.tar.gz &&
+          sudo docker run -d --name leilao-api -p 3000:3000 -e DATABASE_URL="${{ secrets.DATABASE_URL }}" -e JWT_SECRET="${{ secrets.JWT_SECRET }}" nodeapp
         '
