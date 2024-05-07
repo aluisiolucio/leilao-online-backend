@@ -52,5 +52,5 @@ app.setErrorHandler((error: HTTPError, request, reply) => {
 })
 
 app.listen({ port: 3000 }).then(() => {
-  console.log("HTTP server running on port 3333...")
+  console.log("HTTP server running on port 3000...")
 })
