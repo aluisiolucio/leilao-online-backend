@@ -6,37 +6,66 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
+    outputs:
+      build_required: ${{ steps.check-changes.outputs.build_required }}
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-    
+
+    - name: Check for changes
+      id: check-changes
+      run: |
+        if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -qvE '(Dockerfile|src/)'
+        then
+          echo "No changes in Dockerfile or src."
+          echo "::set-output name=build_required::false"
+        else
+          echo "Changes detected in Dockerfile or src."
+          echo "::set-output name=build_required::true"
+        fi
+
+    - name: Build Docker image
+      if: steps.check-changes.outputs.build_required == 'true'
+      run: |
+        sudo docker build -t nodeapp:${{ github.sha }} .
+
+    - name: Save Docker image
+      if: steps.check-changes.outputs.build_required == 'true'
+      run: |
+        sudo docker save nodeapp:${{ github.sha }} | gzip > nodeapp.tar.gz
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: needs.build.outputs.build_required == 'true'
+
+    steps:
     - name: Set up SSH key
       uses: webfactory/ssh-agent@v0.5.3
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-    
-    - name: Build Docker image
-      run: |
-        sudo docker build -t nodeapp .
-    
-    - name: Save Docker image
-      run: |
-        sudo docker save nodeapp | gzip > nodeapp.tar.gz
-    
+
+    - name: Download artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: nodeapp.tar.gz
+        path: .
+
     - name: Copy Docker image to EC2
       run: |
         scp -o StrictHostKeyChecking=no nodeapp.tar.gz ubuntu@3.239.191.235:/home/ubuntu
-    
+
     - name: Deploy to EC2
       run: |
         ssh -o StrictHostKeyChecking=no ubuntu@3.239.191.235 '
-          if [ $(sudo docker ps -aq -f name=nodeapp | wc -l) -gt 0 ]; then
-            sudo docker stop nodeapp &&
-            sudo docker rm nodeapp
+          if [ $(sudo docker ps -aq -f name=leilao-api | wc -l) -gt 0 ]; then
+            sudo docker stop leilao-api &&
+            sudo docker rm leilao-api
           fi;
           sudo docker load < nodeapp.tar.gz &&
-          sudo docker run -d --name leilao-api -p 3000:3000 -e DATABASE_URL="${{ secrets.DATABASE_URL }}" -e JWT_SECRET="${{ secrets.JWT_SECRET }}" nodeapp
+          sudo docker run -d --name leilao-api -p 3000:3000 -e DATABASE_URL="${{ secrets.DATABASE_URL }}" -e JWT_SECRET="${{ secrets.JWT_SECRET }}" nodeapp:${{ github.sha }}
+          sudo docker image prune -a -f --filter "until=24h"
         '
