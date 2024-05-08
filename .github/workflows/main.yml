@@ -37,6 +37,13 @@ jobs:
       run: |
         sudo docker save nodeapp:${{ github.sha }} | gzip > nodeapp.tar.gz
 
+    - name: Upload Docker image as an artifact
+      if: steps.check-changes.outputs.build_required == 'true'
+      uses: actions/upload-artifact@v2
+      with:
+        name: nodeapp-image
+        path: nodeapp.tar.gz
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -48,10 +55,10 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    - name: Download artifact
+    - name: Download Docker image artifact
       uses: actions/download-artifact@v2
       with:
-        name: nodeapp.tar.gz
+        name: nodeapp-image
         path: .
 
     - name: Copy Docker image to EC2
