@@ -18,7 +18,7 @@ const waitForConfirmation: Record<string, { isConfirmed: boolean }> = {};
 const lastValue: Record<string, number> = { '': 0 };
 
 async function checkAndOpenBatchs() {
-    // console.log('Verificando lotes para abrir...');
+    console.log('Verificando lotes para abrir...');
     const batchRepository = new BatchRepository();
     const batchesWithRegistration = await batchRepository.getBatchesWithRegistration();
 
@@ -35,9 +35,12 @@ async function checkAndOpenBatchs() {
 
         const currentDateTime = new Date();
         currentDateTime.setHours(currentDateTime.getHours() - 3);
+        console.log('Hora atual:', currentDateTime);
 
         const openingTimeOrignal = new Date(startDateTime);
+        console.log('Hora de abertura:', openingTimeOrignal);
         const openingTime = new Date(openingTimeOrignal.getTime() - 600000);
+        console.log('Hora de abertura - 10 minutos:', openingTime);
 
         if (currentDateTime >= openingTime && currentDateTime < openingTimeOrignal) {
             if (!waitForConfirmation[id].isConfirmed) {                
@@ -72,10 +75,10 @@ async function checkAndOpenBatchs() {
             batchState[id].isOpen = false;
         }
 
-        // console.log('Lote verificado:', id);
+        console.log('Lote verificado:', id);
     });
     
-    // console.log('Verificação de lotes concluída.');
+    console.log('Verificação de lotes concluída.');
 }
 
 
