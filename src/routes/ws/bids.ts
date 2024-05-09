@@ -35,12 +35,11 @@ async function checkAndOpenBatchs() {
 
         const currentDateTime = new Date();
         currentDateTime.setHours(currentDateTime.getHours() - 3);
-        console.log('Hora atual:', currentDateTime);
 
         const openingTimeOrignal = new Date(startDateTime);
-        console.log('Hora de abertura:', openingTimeOrignal);
+        openingTimeOrignal.setHours(openingTimeOrignal.getHours() - 3);
+
         const openingTime = new Date(openingTimeOrignal.getTime() - 600000);
-        console.log('Hora de abertura - 10 minutos:', openingTime);
 
         if (currentDateTime >= openingTime && currentDateTime < openingTimeOrignal) {
             if (!waitForConfirmation[id].isConfirmed) {                
@@ -213,7 +212,10 @@ export async function bids(app: FastifyInstance) {
         socket.on('close', () => {
             const currentDateTime = new Date();
             currentDateTime.setHours(currentDateTime.getHours() - 3);
+
             const openingTimeOrignal = new Date(batch?.startDateTime || ''); // Início do lote
+            openingTimeOrignal.setHours(openingTimeOrignal.getHours() - 3);
+
             const timeToBids = new Date(openingTimeOrignal.getTime() + 600000); // 10 minutos após o início do lote
 
             // Quando o tempo para dar lances acabar, avisar a todos os clientes conectados o vencedor do lote
