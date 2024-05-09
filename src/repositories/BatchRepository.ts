@@ -21,11 +21,11 @@ export class BatchRepository implements IBatchRepository {
                 price: data.price,
                 startDateTime: data.startDateTime,
                 specification: data.specification,
-                imagePath1: data.imagesPath[0],
-                imagePath2: data.imagesPath[1],
-                imagePath3: data.imagesPath[2],
-                imagePath4: data.imagesPath[3],
-                imagePath5: data.imagesPath[4],
+                imagePath1: data.imagesPath[0] || '',
+                imagePath2: data.imagesPath[1] || '',
+                imagePath3: data.imagesPath[2] || '',
+                imagePath4: data.imagesPath[3] || '',
+                imagePath5: data.imagesPath[4] || '',
             }
         })
 

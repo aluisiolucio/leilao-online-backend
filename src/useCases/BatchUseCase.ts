@@ -32,6 +32,24 @@ export class BatchUseCase {
 
     await verifyBatch(batch, this.batchRepository);
 
+    const imagesList = []
+
+    if (batch.imagePath1) {
+        imagesList.push(batch.imagePath1)
+    }
+    if (batch.imagePath2) {
+        imagesList.push(batch.imagePath2)
+    }
+    if (batch.imagePath3) {
+        imagesList.push(batch.imagePath3)
+    }
+    if (batch.imagePath4) {
+        imagesList.push(batch.imagePath4)
+    }
+    if (batch.imagePath5) {
+        imagesList.push(batch.imagePath5)
+    }
+
     return {
         id: batch.id,
         auctionId: batch.auctionId,
@@ -43,7 +61,7 @@ export class BatchUseCase {
         status: batch.status,
         isEnrolled: await this.batchRepository.alreadyEnrolled(currentUser, batch.id),
         isConfirmation: isConfirmation,
-        images: [batch.imagePath1, batch.imagePath2, batch.imagePath3, batch.imagePath4, batch.imagePath5],
+        images: imagesList
     }
   }
 

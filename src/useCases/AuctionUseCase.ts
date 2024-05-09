@@ -39,11 +39,21 @@ export class AuctionUseCase {
             let imagesPath: string[] = []
 
             auction.Batch.forEach( async (batch: any) => {
-                imagesPath.push(batch.imagePath1)
-                imagesPath.push(batch.imagePath2)
-                imagesPath.push(batch.imagePath3)
-                imagesPath.push(batch.imagePath4)
-                imagesPath.push(batch.imagePath5)
+                if (batch.imagePath1 !== '') {
+                    imagesPath.push(batch.imagePath1)
+                }
+                if (batch.imagePath2 !== '') {
+                    imagesPath.push(batch.imagePath2)
+                }
+                if (batch.imagePath3 !== '') {
+                    imagesPath.push(batch.imagePath3)
+                }
+                if (batch.imagePath4 !== '') {
+                    imagesPath.push(batch.imagePath4)
+                }
+                if (batch.imagePath5 !== '') {
+                    imagesPath.push(batch.imagePath5)
+                }
 
                 await verifyBatch(batch, this.batchRepository);
 
@@ -90,11 +100,21 @@ export class AuctionUseCase {
         let batchsList = []
         let imagesPath = []
         for (let batch of auction.Batch) {
-            imagesPath.push(batch.imagePath1)
-            imagesPath.push(batch.imagePath2)
-            imagesPath.push(batch.imagePath3)
-            imagesPath.push(batch.imagePath4)
-            imagesPath.push(batch.imagePath5)
+            if (batch.imagePath1 !== '') {
+                imagesPath.push(batch.imagePath1)
+            }
+            if (batch.imagePath2 !== '') {
+                imagesPath.push(batch.imagePath2)
+            }
+            if (batch.imagePath3 !== '') {
+                imagesPath.push(batch.imagePath3)
+            }
+            if (batch.imagePath4 !== '') {
+                imagesPath.push(batch.imagePath4)
+            }
+            if (batch.imagePath5 !== '') {
+                imagesPath.push(batch.imagePath5)
+            }
 
             await verifyBatch(batch, this.batchRepository);
 

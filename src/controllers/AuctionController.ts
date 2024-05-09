@@ -31,7 +31,7 @@ export class AuctionController {
                 code: z.number(),
                 startDateTime: z.string(),
                 specification: z.string(),
-                imagesPath: z.array(z.string()).length(5),
+                imagesPath: z.array(z.string()),
             }))
         }).safeParse(requestBody)
 
