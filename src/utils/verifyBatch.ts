@@ -7,6 +7,7 @@ export async function verifyBatch(batch: any, batchRepository: IBatchRepository)
     currentDateTime.setHours(currentDateTime.getHours() - 3);
   
     const openingTimeOrignal = new Date(batch.startDateTime);
+    openingTimeOrignal.setHours(openingTimeOrignal.getHours() - 3);
   
     if (currentDateTime > openingTimeOrignal && batch.status !== 'Fechado') {
       const hasParticipantsConfirmed = await batchRepository.hasParticipants(batch.id);
