@@ -37,7 +37,7 @@ async function checkAndOpenBatchs(app: FastifyInstance) {
         currentDateTime.setHours(currentDateTime.getHours() - 3);
 
         const openingTimeOrignal = new Date(startDateTime);
-        // openingTimeOrignal.setHours(openingTimeOrignal.getHours() - 3);
+        openingTimeOrignal.setHours(openingTimeOrignal.getHours() - 3);
 
         const openingTime = new Date(openingTimeOrignal.getTime() - 600000);
 
