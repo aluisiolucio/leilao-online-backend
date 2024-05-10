@@ -10,9 +10,7 @@ import { deleteAuction, getAuction, getAuctionById, postAuction, updateAuction }
 import { confirmInscription, deleteBatch, enrollUserInBatch, getBatchById, getEnrolledBatchs, postBatch, putBatch } from "./routes/batch";
 import { bids } from "./routes/ws/bids";
 
-const app = fastify({
-  logger: true
-})
+const app = fastify()
 
 app.register(cors, {
   origin: '*',

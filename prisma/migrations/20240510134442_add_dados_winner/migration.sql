@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "batches" ADD COLUMN     "closingPrice" DOUBLE PRECISION NOT NULL DEFAULT 0,
+ADD COLUMN     "winnerId" TEXT NOT NULL DEFAULT '';

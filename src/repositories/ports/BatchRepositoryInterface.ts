@@ -17,4 +17,5 @@ export interface IBatchRepository {
     getInscriptionById(userId: string, batchId: string): Promise<InscriptionData | null>
     alreadyEnrolled(userId: string, batchId: string): Promise<boolean>
     alreadyConfimation(inscriptionId: string): Promise<boolean>
+    saveWinner(batchId: string, winnerId: string, closingPrice: number): Promise<void>
 }

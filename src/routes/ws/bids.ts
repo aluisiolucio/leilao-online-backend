@@ -17,7 +17,7 @@ const batchState: Record<string, { isOpen: boolean }> = {};
 const waitForConfirmation: Record<string, { isConfirmed: boolean }> = {};
 const lastValue: Record<string, number> = { '': 0 };
 
-async function checkAndOpenBatchs() {
+async function checkAndOpenBatchs(app: FastifyInstance) {
     console.log('Verificando lotes para abrir...');
     const batchRepository = new BatchRepository();
     const batchesWithRegistration = await batchRepository.getBatchesWithRegistration();
@@ -37,16 +37,17 @@ async function checkAndOpenBatchs() {
         currentDateTime.setHours(currentDateTime.getHours() - 3);
 
         const openingTimeOrignal = new Date(startDateTime);
-        openingTimeOrignal.setHours(openingTimeOrignal.getHours() - 3);
+        // openingTimeOrignal.setHours(openingTimeOrignal.getHours() - 3);
 
         const openingTime = new Date(openingTimeOrignal.getTime() - 600000);
 
+        // Período de 10 minutos antes do início do lote, para confirmação de participantes
         if (currentDateTime >= openingTime && currentDateTime < openingTimeOrignal) {
             if (!waitForConfirmation[id].isConfirmed) {                
                 waitForConfirmation[id].isConfirmed = true;
                 await batchRepository.changeStatus(id, batchStatusEnum.WAITING_FOR_PARTICIPANTS);
             }
-        } else if (currentDateTime >= openingTimeOrignal) {
+        } else if (currentDateTime >= openingTimeOrignal) { // Período de lances
             waitForConfirmation[id].isConfirmed = false;
 
             const hasParticipantsConfirmed = await batchRepository.hasParticipants(id);
@@ -60,12 +61,46 @@ async function checkAndOpenBatchs() {
     
                 batchState[id].isOpen = true;
     
-                const openingTimeToBids = new Date(openingTimeOrignal.getTime() + 600000);
+                const timeToBids = new Date(openingTimeOrignal.getTime() + 600000); // 10 minutos após o início do lote, para lances
     
-                if (currentDateTime >= openingTimeToBids) {
+                // Avise, uma única vez a todos os clientes conectados que o tempo restante para dar lances está finalizando, quando faltar 1 minuto
+                // diferença entre currentDateTime e timeToBids quando faltar 1 minuto
+                const difference = timeToBids.getTime() - currentDateTime.getTime();
+
+                if (difference <= 60000 && difference > 0) {
+                    app.websocketServer.clients.forEach((client: any) => {
+                        if (client.batchId === id && client.readyState === 1) {
+                            client.send(JSON.stringify({ type: 'info', message: 'Falta menos de 1 minuto para o fim do período de lances' }));
+                        }
+                    });
+                }
+          
+                if (currentDateTime >= timeToBids) {
                     batchState[id].isOpen = false;
     
                     await batchRepository.changeStatus(id, batchStatusEnum.CLOSED);
+
+                    if (!bidsByBatchId[id]) {
+                        return;
+                    }
+                    
+                    const winner = bidsByBatchId[id].reduce((prev: any, current: any) => (prev.value > current.value) ? prev : current);
+
+                    app.websocketServer.clients.forEach((client: any) => {
+                        if (client.batchId === id && client.readyState === 1) {
+                            client.send(JSON.stringify({ type: 'info', message: `Lote encerrado! Vencedor: ${winner.userName} - R$ ${winner.value}` }));
+                        }
+                    });
+
+                    // Salvar o vencedor no banco de dados
+                    await batchRepository.saveWinner(id, winner.userId, winner.value);
+
+                    // Fechar conexões WebSocket dos clientes conectados somente a este lote
+                    app.websocketServer.clients.forEach((client: any) => {
+                        if (client.batchId === id) {
+                            client.close();
+                        }
+                    });
                 }
             }
 
@@ -82,10 +117,10 @@ async function checkAndOpenBatchs() {
 
 
 export async function bids(app: FastifyInstance) {
-    await checkAndOpenBatchs();
+    await checkAndOpenBatchs(app);
 
     setInterval(async () => {
-        await checkAndOpenBatchs();
+        await checkAndOpenBatchs(app);
     }, 60000);
 
     app.get('/:batchId/bids', { websocket: true }, async (socket, request) => {
@@ -100,30 +135,12 @@ export async function bids(app: FastifyInstance) {
 
         // Verificar se o lote está aberto para lances
         if (batchState[batchId] && batchState[batchId].isOpen) {
-        // if (true) {
             // Enviar lances anteriores para o cliente
             if (bidsByBatchId[batchId]) {
                 bidsByBatchId[batchId].forEach((lance: Lance) => {
                     socket.send(JSON.stringify({ type: 'bid', ...lance }));
                 });
             }
-            
-            // Avise a todos os cleintes conectados que o tempo restante para dar lances está finalizando, quando faltar 1 minuto
-            // const currentDateTime = new Date();
-            // currentDateTime.setHours(currentDateTime.getHours() - 3);
-            // const openingTimeOrignal = new Date(batch?.startDateTime || ''); // Início do lote
-            // const timeToBids = new Date(openingTimeOrignal.getTime() + 600000); // 10 minutos após o início do lote
-
-            // // diferença entre currentDateTime e timeToBids quando faltar 1 minuto
-            // const difference = timeToBids.getTime() - currentDateTime.getTime();
-
-            // if (difference <= 60000 && difference > 0) {
-            //     app.websocketServer.clients.forEach((client: any) => {
-            //         if (client.batchId === batchId && client.readyState === 1) {
-            //             client.send(JSON.stringify({ type: 'info', message: 'Faltam 1 minuto para o fim dos lances' }));
-            //         }
-            //     });
-            // }
 
             socket.on('message', async (message: string) => {
                 if (batchState[batchId] && !batchState[batchId].isOpen) {
@@ -159,7 +176,7 @@ export async function bids(app: FastifyInstance) {
                             return;
                         }
                         // Lógica de processamento de lance aqui...
-                        if (lastValue[batchId] == 0) {
+                        if (lastValue[batchId] == 0 || !lastValue[batchId] || lastValue[batchId] == undefined || lastValue[batchId] == null) {
                             lastValue[batchId] = initialValue;
                         }
     
@@ -176,7 +193,7 @@ export async function bids(app: FastifyInstance) {
                             userName: socket.user.name,
                             userId: socket.user.id,
                             value: lastValue[batchId],
-                            code: batch?.code || 0,
+                            code: Math.floor(Math.random() * 10000),
                             index: bidsByBatchId[batchId] ? bidsByBatchId[batchId].length : 0
                         }
     
@@ -207,33 +224,14 @@ export async function bids(app: FastifyInstance) {
         } else {
             // Informar ao cliente que o lote está fechado para lances
             socket.send(JSON.stringify({ type: 'error', message: 'Lote fechado para lances' }));
+
+            // Fechar conexão WebSocket
+            socket.close();
         }
 
-        socket.on('close', () => {
-            const currentDateTime = new Date();
-            currentDateTime.setHours(currentDateTime.getHours() - 3);
+        socket.on('close', async () => {
+            console.log('Conexão WebSocket fechada:', socket.user?.name || 'Anônimo');
 
-            const openingTimeOrignal = new Date(batch?.startDateTime || ''); // Início do lote
-            openingTimeOrignal.setHours(openingTimeOrignal.getHours() - 3);
-
-            const timeToBids = new Date(openingTimeOrignal.getTime() + 600000); // 10 minutos após o início do lote
-
-            // Quando o tempo para dar lances acabar, avisar a todos os clientes conectados o vencedor do lote
-            if (currentDateTime >= timeToBids) {
-                batchState[batchId].isOpen = false;
-
-                const winner = bidsByBatchId[batchId].reduce((prev: any, current: any) => (prev.value > current.value) ? prev : current);
-
-                app.websocketServer.clients.forEach((client: any) => {
-                    if (client.batchId === batchId && client.readyState === 1) {
-                        client.send(JSON.stringify({ type: 'info', message: `Lote fechado! Vencedor: ${winner.userName} - R$ ${winner.value.toFixed(2)}` }));
-                    }
-                });
-
-                // // Salvar o vencedor no banco de dados
-                // await batchRepository.saveWinner(batchId, winner.userId, winner.value);
-            }
-            // Remover a conexão WebSocket quando desconectada
             delete socket.batchId;
         });
     });

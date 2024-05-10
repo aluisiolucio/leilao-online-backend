@@ -4,9 +4,14 @@ import { IAuctionRepository } from "../repositories/ports/AuctionRepositoryInter
 import { BatchData } from "../types/batch";
 import { batchStatusEnum } from "../types/batchStatus";
 import { verifyBatch } from "../utils/verifyBatch";
+import { IAuthRepository } from "../repositories/ports/AuthRepositoryInterface";
 
 export class BatchUseCase {
-  constructor(private readonly batchRepository: IBatchRepository, private readonly auctionRepository: IAuctionRepository) {}
+  constructor(
+    private readonly batchRepository: IBatchRepository,
+    private readonly auctionRepository: IAuctionRepository,
+    private readonly authRepository?: IAuthRepository
+  ) {}
 
   public async createBatch(data: BatchData): Promise<object> {
     const batch = await this.batchRepository.createBatch(data)
@@ -31,6 +36,12 @@ export class BatchUseCase {
     }
 
     await verifyBatch(batch, this.batchRepository);
+
+    const winner = await this.authRepository?.getUserById(batch.winnerId)
+
+    if (winner?.id === currentUser) {
+      winner.name = winner?.name + ' (você)'
+    }
 
     const imagesList = []
 
@@ -59,6 +70,10 @@ export class BatchUseCase {
         specification: batch.specification,
         code: batch.code,
         status: batch.status,
+        winner: {
+            name: winner?.name,
+        },
+        closingPrice: batch.closingPrice,
         isEnrolled: await this.batchRepository.alreadyEnrolled(currentUser, batch.id),
         isConfirmation: isConfirmation,
         images: imagesList

@@ -5,14 +5,17 @@ import { BatchRepository } from '../repositories/BatchRepository';
 import { BatchUseCase } from '../useCases/BatchUseCase';
 import { AuctionRepository } from '../repositories/AuctionRepository';
 import { BatchData } from '../types/batch';
+import { AuthRepository } from '../repositories/AuthRepository';
 
 export class BatchController {
     private batchRepository: BatchRepository
     private auctionRepository: AuctionRepository
+    private authRepository: AuthRepository
 
     constructor() {
         this.batchRepository = new BatchRepository()
         this.auctionRepository = new AuctionRepository()
+        this.authRepository = new AuthRepository()
     }
 
     public async createBatch(requestBody: unknown) {
@@ -37,7 +40,7 @@ export class BatchController {
     }
 
     public async getBatchById(id: string, currentUser: string) {
-        const batch = new BatchUseCase(this.batchRepository, this.auctionRepository)
+        const batch = new BatchUseCase(this.batchRepository, this.auctionRepository, this.authRepository)
         return await batch.getBatchById(id, currentUser)
     }
 

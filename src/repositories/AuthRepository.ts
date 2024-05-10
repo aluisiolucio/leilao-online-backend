@@ -32,6 +32,20 @@ export class AuthRepository implements IAuthRepository {
         return user
     }
 
+    public async getUserById(id: string): Promise<User | null> {
+        const user = await prisma.user.findUnique({
+            where: {
+                id
+            }
+        })
+
+        if (!user) {
+            return null
+        }
+
+        return user
+    }
+
     public async emailExists(email: string): Promise<boolean> {
         const user = await prisma.user.findUnique({
             where: {

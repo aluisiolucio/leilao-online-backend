@@ -232,4 +232,25 @@ export class BatchRepository implements IBatchRepository {
 
         return inscription?.confirmation || false
     }
+
+    public async saveWinner(batchId: string, winnerId: string, closingPrice: number): Promise<void> {
+        try {
+            await prisma.batch.update({
+                where: {
+                    id: batchId
+                },
+                data: {
+                    winnerId,
+                    closingPrice: Number(closingPrice),
+                }
+            })
+        } catch (error: any) {
+            if(error.code === 'P2025') {
+                throw new HTTPError(404, 'Lote não encontrado')
+            }
+
+            console.log(error)
+            throw new HTTPError(400, 'Erro ao salvar vencedor')
+        }
+    }
 }
