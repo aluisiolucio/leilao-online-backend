@@ -3,7 +3,7 @@ import { IAuctionRepository } from '../repositories/ports/AuctionRepositoryInter
 import { IBatchRepository } from '../repositories/ports/BatchRepositoryInterface'
 import { AuctionData, QueryParamsAuction } from '../types/auction'
 import { BatchData } from '../types/batch'
-import { verifyBatch } from '../utils/verifyBatch'
+import { getSignedDownloadUrl, verifyBatch } from '../utils/verifyBatch'
 
 export class AuctionUseCase {
   constructor(private readonly auctionRepository: IAuctionRepository, private readonly batchRepository: IBatchRepository) {}
@@ -31,32 +31,38 @@ export class AuctionUseCase {
     }
 
     public async getAuctions(params: QueryParamsAuction, currentUser: string) {
-        const auctions = await this.auctionRepository.getAuctions(params, currentUser)
-
-        let auctionsList: any[] = []
-        auctions.forEach((auction: any) => {
-            let batchsList: any[] = []
-            let imagesPath: string[] = []
-
-            auction.Batch.forEach( async (batch: any) => {
+        const auctions = await this.auctionRepository.getAuctions(params, currentUser);
+    
+        let auctionsList: any[] = [];
+        for (const auction of auctions) {
+            let batchsList: any[] = [];
+            let imagesPath: string[] = [];
+    
+            for (const batch of auction.Batch) {
                 if (batch.imagePath1 !== '') {
-                    imagesPath.push(batch.imagePath1)
+                    imagesPath.push(batch.imagePath1);
                 }
                 if (batch.imagePath2 !== '') {
-                    imagesPath.push(batch.imagePath2)
+                    imagesPath.push(batch.imagePath2);
                 }
                 if (batch.imagePath3 !== '') {
-                    imagesPath.push(batch.imagePath3)
+                    imagesPath.push(batch.imagePath3);
                 }
                 if (batch.imagePath4 !== '') {
-                    imagesPath.push(batch.imagePath4)
+                    imagesPath.push(batch.imagePath4);
                 }
                 if (batch.imagePath5 !== '') {
-                    imagesPath.push(batch.imagePath5)
+                    imagesPath.push(batch.imagePath5);
                 }
-
+    
                 await verifyBatch(batch, this.batchRepository);
-
+    
+                const signedImagesPath = await Promise.all(
+                    imagesPath.map(async (path) => {
+                        return await getSignedDownloadUrl(path);
+                    })
+                );
+    
                 batchsList.push({
                     id: batch.id,
                     title: batch.title,
@@ -64,12 +70,12 @@ export class AuctionUseCase {
                     price: batch.price,
                     status: batch.status,
                     startDateTime: batch.startDateTime,
-                    imagesPath: imagesPath
-                })
-
-                imagesPath = []
-            })
-
+                    imagesPath: signedImagesPath
+                });
+    
+                imagesPath = [];
+            }
+    
             auctionsList.push({
                 id: auction.id,
                 title: auction.title,
@@ -82,10 +88,16 @@ export class AuctionUseCase {
                     phone: auction.contactPhone
                 },
                 batchs: batchsList
-            })
-        })
+            });
+        }
 
-        return auctionsList
+        await Promise.all(
+            auctionsList.map(async (auction) => {
+                auction.imagePath = await getSignedDownloadUrl(auction.imagePath);
+            })
+        );
+    
+        return auctionsList;
     }
 
     public async getAuctionById(id: string, currentUser: string) {
@@ -118,6 +130,12 @@ export class AuctionUseCase {
 
             await verifyBatch(batch, this.batchRepository);
 
+            const signedImagesPath = await Promise.all(
+                imagesPath.map(async (path) => {
+                    return await getSignedDownloadUrl(path);
+                })
+            );
+
             batchsList.push({
                 id: batch.id,
                 title: batch.title,
@@ -125,7 +143,7 @@ export class AuctionUseCase {
                 price: batch.price,
                 status: batch.status,
                 startDateTime: batch.startDateTime,
-                imagesPath: imagesPath
+                imagesPath: signedImagesPath
             })
 
             imagesPath = []
@@ -137,7 +155,7 @@ export class AuctionUseCase {
             description: auction.description,
             ownerId: auction.ownerId,
             isOwner: isOwner,
-            imagePath: auction.imagePath,
+            imagePath: await getSignedDownloadUrl(auction.imagePath),
             category: auction.category,
             contact: {
                 name: auction.contactName,

@@ -3,7 +3,7 @@ import { IBatchRepository } from "../repositories/ports/BatchRepositoryInterface
 import { IAuctionRepository } from "../repositories/ports/AuctionRepositoryInterface";
 import { BatchData } from "../types/batch";
 import { batchStatusEnum } from "../types/batchStatus";
-import { verifyBatch } from "../utils/verifyBatch";
+import { getSignedDownloadUrl, verifyBatch } from "../utils/verifyBatch";
 import { IAuthRepository } from "../repositories/ports/AuthRepositoryInterface";
 
 export class BatchUseCase {
@@ -61,6 +61,12 @@ export class BatchUseCase {
         imagesList.push(batch.imagePath5)
     }
 
+    const signedImagesPath = await Promise.all(
+      imagesList.map(async (path) => {
+          return await getSignedDownloadUrl(path);
+      })
+    );
+
     return {
         id: batch.id,
         auctionId: batch.auctionId,
@@ -76,7 +82,7 @@ export class BatchUseCase {
         closingPrice: batch.closingPrice,
         isEnrolled: await this.batchRepository.alreadyEnrolled(currentUser, batch.id),
         isConfirmation: isConfirmation,
-        images: imagesList
+        images: signedImagesPath
     }
   }
 

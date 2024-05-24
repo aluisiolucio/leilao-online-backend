@@ -5,7 +5,7 @@ import websocket from "@fastify/websocket";
 import { HTTPError } from "./errors/httpError";
 import { authHandler } from "./hooks/authHandler";
 
-import { signUp, signIn } from "./routes/auth";
+import { signUp, signIn, presignedUrl } from "./routes/auth";
 import { deleteAuction, getAuction, getAuctionById, postAuction, updateAuction } from "./routes/auction";
 import { confirmInscription, deleteBatch, enrollUserInBatch, getBatchById, getEnrolledBatchs, postBatch, putBatch } from "./routes/batch";
 // import { lancesHttp } from "./routes/http/lancesHttp";
@@ -22,6 +22,7 @@ app.register(websocket)
 
 app.register(signUp, { prefix: '/api/auth' })
 app.register(signIn, { prefix: '/api/auth' })
+app.register(presignedUrl, { prefix: '/api/auth' })
 
 app.register(postAuction, { prefix: '/api/auction' })
 app.register(getAuction, { prefix: '/api/auction' })
