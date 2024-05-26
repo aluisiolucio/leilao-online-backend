@@ -63,15 +63,11 @@ jobs:
 
     - name: Copy Docker image to EC2
       run: |
-        scp -o StrictHostKeyChecking=no nodeapp.tar.gz ubuntu@ec2-34-228-15-58.compute-1.amazonaws.com:/home/ubuntu
+        scp -o StrictHostKeyChecking=no nodeapp.tar.gz ubuntu@34.228.15.58:/home/ubuntu
 
     - name: Deploy to EC2
       run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@ec2-34-228-15-58.compute-1.amazonaws.com '
-          if [ $(sudo docker ps -aq -f name=leilao-api | wc -l) -gt 0 ]; then
-            sudo docker stop leilao-api &&
-            sudo docker rm leilao-api
-          fi
+        ssh -o StrictHostKeyChecking=no ubuntu@34.228.15.58 '
           sudo docker load < nodeapp.tar.gz &&
           sudo docker run -d --name leilao-api -p 5555:3000 \
             -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
