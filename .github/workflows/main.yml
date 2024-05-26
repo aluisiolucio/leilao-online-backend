@@ -63,7 +63,7 @@ jobs:
 
     - name: Copy Docker image to EC2
       run: |
-        scp -o StrictHostKeyChecking=no nodeapp.tar.gz ubuntu@34.228.15.58:/home/ubuntu
+        scp -o StrictHostKeyChecking=no nodeapp.tar.gz deploy.sh ubuntu@34.228.15.58:/home/ubuntu
 
     - name: Execute deployment script on EC2
       run: |
