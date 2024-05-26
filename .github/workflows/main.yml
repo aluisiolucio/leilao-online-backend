@@ -86,4 +86,4 @@ jobs:
 
     - name: Remove Docker image artifact from EC2
       run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@ec2-34-228-15-58.compute-1.amazonaws.com 'rm /home/ubuntu/nodeapp.tar.gz'
+        ssh -o StrictHostKeyChecking=no ubuntu@ec2-34-228-15-58.compute-1.amazonaws.com 'sudo rm /home/ubuntu/nodeapp.tar.gz'
