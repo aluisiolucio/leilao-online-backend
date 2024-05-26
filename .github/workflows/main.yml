@@ -83,3 +83,7 @@ jobs:
             nodeapp:${{ github.sha }}
           sudo docker image prune -a -f --filter "until=24h"
         '
+
+    - name: Remove Docker image artifact from EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no ubuntu@ec2-34-228-15-58.compute-1.amazonaws.com 'rm /home/ubuntu/nodeapp.tar.gz'
