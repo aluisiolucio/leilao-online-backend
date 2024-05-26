@@ -71,7 +71,7 @@ jobs:
           if [ $(sudo docker ps -aq -f name=leilao-api | wc -l) -gt 0 ]; then
             sudo docker stop leilao-api &&
             sudo docker rm leilao-api
-          fi;
+          fi
           sudo docker load < nodeapp.tar.gz &&
           sudo docker run -d --name leilao-api -p 5555:3000 \
             -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
