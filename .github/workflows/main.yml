@@ -68,14 +68,11 @@ jobs:
     - name: Deploy to EC2
       run: |
         ssh -o StrictHostKeyChecking=no ubuntu@34.228.15.58 '
+          if [ $(sudo docker ps -aq -f name=leilao-api | wc -l) -gt 0 ]; then
+            sudo docker stop leilao-api &&
+            sudo docker rm leilao-api
+          fi;
           sudo docker load < nodeapp.tar.gz &&
-          sudo docker run -d --name leilao-api -p 5555:3000 \
-            -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-            -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
-            -e AWS_S3_BUCKET="${{ secrets.AWS_S3_BUCKET }}" \
-            -e AWS_REGION="${{ secrets.AWS_REGION }}" \
-            -e AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-            -e AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-            nodeapp:${{ github.sha }}
+          sudo docker run -d --name leilao-api -p 5555:3000 -e DATABASE_URL="${{ secrets.DATABASE_URL }}" -e JWT_SECRET="${{ secrets.JWT_SECRET }}" -e AWS_S3_BUCKET="${{ secrets.AWS_S3_BUCKET }}" -e AWS_REGION="${{ secrets.AWS_REGION }}" -e AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" -e AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" nodeapp:${{ github.sha }} &&
           sudo docker image prune -a -f --filter "until=24h"
         '
