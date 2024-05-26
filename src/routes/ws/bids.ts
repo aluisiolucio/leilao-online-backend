@@ -180,10 +180,10 @@ export async function bids(app: FastifyInstance) {
                             lastValue[batchId] = initialValue;
                         }
     
-                        if (data.value <= lastValue[batchId]) {
-                            socket.send(JSON.stringify({ type: 'error', message: 'Lance inválido! Informe um valor superior ao último lance' }));
-                            return;
-                        }
+                        // if (data.value <= lastValue[batchId]) {
+                        //     socket.send(JSON.stringify({ type: 'error', message: 'Lance inválido! Informe um valor superior ao último lance' }));
+                        //     return;
+                        // }
     
                         lastValue[batchId] = data.value;
     
