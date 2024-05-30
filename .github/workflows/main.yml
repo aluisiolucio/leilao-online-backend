@@ -26,17 +26,14 @@ jobs:
           echo "Changes detected in Dockerfile or prisma or src."
           echo "::set-output name=build_required::true"
         fi
-
     - name: Build Docker image
       if: steps.check-changes.outputs.build_required == 'true'
       run: |
         sudo docker build -t nodeapp:${{ github.sha }} .
-
     - name: Save Docker image
       if: steps.check-changes.outputs.build_required == 'true'
       run: |
         sudo docker save nodeapp:${{ github.sha }} | gzip > nodeapp.tar.gz
-
     - name: Upload Docker image as an artifact
       if: steps.check-changes.outputs.build_required == 'true'
       uses: actions/upload-artifact@v2
@@ -63,8 +60,4 @@ jobs:
 
     - name: Copy Docker image to EC2
       run: |
-        scp -o StrictHostKeyChecking=no nodeapp.tar.gz deploy.sh ubuntu@34.228.15.58:/home/ubuntu
-
-    - name: Execute deployment script on EC2
-      run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@34.228.15.58 'bash -s' < deploy.sh
+        scp -o StrictHostKeyChecking=no nodeapp.tar.gz ubuntu@ec2-34-234-91-220.compute-1.amazonaws.com:/home/ubuntu
