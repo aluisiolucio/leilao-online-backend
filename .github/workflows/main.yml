@@ -60,11 +60,11 @@ jobs:
 
     - name: Copy Docker image to EC2
       run: |
-        scp -o StrictHostKeyChecking=no nodeapp.tar.gz ubuntu@ec2-34-234-91-220.compute-1.amazonaws.com:/home/ubuntu
+        scp -o StrictHostKeyChecking=no nodeapp.tar.gz ubuntu@ec2-3-80-115-188.compute-1.amazonaws.com:/home/ubuntu
 
     - name: Load Docker image on EC2
       run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@ec2-34-234-91-220.compute-1.amazonaws.com '
+        ssh -o StrictHostKeyChecking=no ubuntu@ec2-3-80-115-188.compute-1.amazonaws.com '
           if [ $(sudo docker ps -aq -f name=leilao-api | wc -l) -gt 0 ]; then
             sudo docker stop leilao-api &&
             sudo docker rm leilao-api
