@@ -8,8 +8,8 @@ import { authHandler } from "./hooks/authHandler";
 import { signUp, signIn, presignedUrl } from "./routes/auth";
 import { deleteAuction, getAuction, getAuctionById, postAuction, updateAuction } from "./routes/auction";
 import { confirmInscription, deleteBatch, enrollUserInBatch, getBatchById, getEnrolledBatchs, postBatch, putBatch } from "./routes/batch";
-import { lancesHttp } from "./routes/http/lancesHttp";
-// import { bids } from "./routes/ws/bids";
+// import { lancesHttp } from "./routes/http/lancesHttp";
+import { bids } from "./routes/ws/bids";
 
 const app = fastify()
 
@@ -38,8 +38,8 @@ app.register(enrollUserInBatch, { prefix: '/api/batch' })
 app.register(getEnrolledBatchs, { prefix: '/api/batch' })
 app.register(confirmInscription, { prefix: '/api/batch' })
 
-// app.register(bids, { prefix: '/api/batch' })
-app.register(lancesHttp, { prefix: '/api/batch' })
+app.register(bids, { prefix: '/api/batch' })
+// app.register(lancesHttp, { prefix: '/api/batch' })
 
 app.addHook('preHandler', authHandler)
 
