@@ -59,6 +59,9 @@ export class AuctionRepository implements IAuctionRepository {
             auctions = auctions.filter(auction => auction.ownerId == currentUser);
         } else {
             auctions = auctions.filter(auction => auction.ownerId !== currentUser);
+
+            // Filtre apenas os auctions que possuem batchs abertos e caso não tenha nenhum batch aberto, não adicione o auction
+            auctions = auctions.filter(auction => auction.Batch.some(batch => batch.status === 'Aberto'));
         }
 
         return auctions;

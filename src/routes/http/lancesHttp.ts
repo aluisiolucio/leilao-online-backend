@@ -104,7 +104,7 @@ export async function lancesHttp(app: FastifyInstance) {
         await checkAndOpenBatchs(app);
     }, 60000);
 
-    app.get('/:batchId/lances', async (request, reply) => {
+    app.get('/:batchId/get-lances', async (request, reply) => {
         const { batchId } = request.params as any;
 
         if (!bidsByBatchId[batchId] || !batchState[batchId] || !batchState[batchId].isOpen) {
@@ -114,7 +114,7 @@ export async function lancesHttp(app: FastifyInstance) {
         return bidsByBatchId[batchId];
     });
 
-    app.post('/lances', async (request, reply) => {
+    app.post('/save-lance', async (request, reply) => {
         const { batchId, value } = request.body as any;
 
         const batchRepository = new BatchRepository();
