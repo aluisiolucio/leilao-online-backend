@@ -100,6 +100,20 @@ export class AuctionUseCase {
         // Order auctions by startDateTime
         auctionsList.sort((a, b) => {
             for (let i = 0; i < a.batchs.length; i++) {
+
+                if (!a || !b || !a.batchs[i] || !b.batchs[i]) {
+                    return 0;
+                }
+
+                // Verifique se startDateTime não é undefined
+                if (!a.batchs[i].startDateTime) {
+                    return 1;
+                }
+                
+                if (!b.batchs[i].startDateTime) {
+                    return -1;
+                }
+
                 if (a.batchs[i].startDateTime < b.batchs[i].startDateTime) {
                     return -1;
                 } else if (a.batchs[i].startDateTime > b.batchs[i].startDateTime) {
