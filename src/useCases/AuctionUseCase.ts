@@ -96,6 +96,18 @@ export class AuctionUseCase {
                 auction.imagePath = await getSignedDownloadUrl(auction.imagePath);
             })
         );
+
+        // Order auctions by startDateTime
+        auctionsList.sort((a, b) => {
+            for (let i = 0; i < a.batchs.length; i++) {
+                if (a.batchs[i].startDateTime < b.batchs[i].startDateTime) {
+                    return -1;
+                } else if (a.batchs[i].startDateTime > b.batchs[i].startDateTime) {
+                    return 1;
+                }
+            }
+            return 0;
+        });
     
         return auctionsList;
     }
