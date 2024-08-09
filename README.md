@@ -1,6 +1,6 @@
 # API de Leilão Online com Lances em Tempo Real
 
-Este repositório contém a aplicação de leilões online desenvolvida como o projeto de Trabalho de Conclusão de Curso (TCC) em Ciência da Computação. Essa API permite a criação e gerenciamento de leilões, em que os lances são realizados em tempo real através do uso de WebSockets. Veja o <a href="https://github.com/aluisiolucio/leilao-online-frontend">Frontend da Aplicação de Leilão Online com Lances em Tempo Real</a> que consome esta API.
+Este repositório contém a aplicação de leilões online desenvolvida como o projeto de Trabalho de Conclusão de Curso (TCC) em Ciência da Computação. Essa API permite a criação e gerenciamento de leilões, em que os lances são realizados em tempo real através do uso de WebSockets. Veja o <a href="https://github.com/aluisiolucio/leilao-online-frontend">Frontend da Aplicação de Leilão Online com Lances em Tempo Real</a>.
 
 ## Tecnologias Utilizadas
 
