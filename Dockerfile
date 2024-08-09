@@ -18,5 +18,3 @@ ENV TZ=America/Sao_Paulo
 
 # Configurar fuso horário
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-
-CMD ["node", "dist/server.js"]
